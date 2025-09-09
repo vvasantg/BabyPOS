@@ -56,6 +56,7 @@ namespace BabyPOS_API.Controllers
                 {
                     Id = shop.Id,
                     Name = shop.Name,
+                    Description = shop.Description,
                     Foods = foods
                 };
             }).ToList();
@@ -137,6 +138,7 @@ namespace BabyPOS_API.Controllers
                 {
                     Id = shop.Id,
                     Name = shop.Name,
+                    Description = shop.Description,
                     Foods = foods
                 };
             })
@@ -172,8 +174,9 @@ namespace BabyPOS_API.Controllers
             if (existing.OwnerId != userId)
                 return Forbid("You can only edit your own shops");
                 
-            // อัพเดทเฉพาะ Name เท่านั้น - ไม่แตะ OwnerId
+            // อัพเดทเฉพาะ Name และ Description เท่านั้น - ไม่แตะ OwnerId
             existing.Name = shop.Name;
+            existing.Description = shop.Description;
             // ไม่ set existing.OwnerId เพราะต้องคงเดิม
             await _context.SaveChangesAsync();
             return Ok(existing);
@@ -197,8 +200,9 @@ namespace BabyPOS_API.Controllers
             if (existing.OwnerId != userId)
                 return Forbid("You can only edit your own shops");
                 
-            // อัพเดทเฉพาะ Name เท่านั้น - ไม่แตะ OwnerId
+            // อัพเดทเฉพาะ Name และ Description เท่านั้น - ไม่แตะ OwnerId
             existing.Name = shop.Name;
+            existing.Description = shop.Description;
             // ไม่ set existing.OwnerId เพราะต้องคงเดิม
             await _context.SaveChangesAsync();
             return Ok(existing);

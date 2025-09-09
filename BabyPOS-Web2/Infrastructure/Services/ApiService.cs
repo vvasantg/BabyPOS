@@ -2,6 +2,7 @@ using BabyPOS_Web2.Application.DTOs;
 using System.Text.Json;
 using System.Text;
 using Microsoft.JSInterop;
+using System.Linq;
 
 namespace BabyPOS_Web2.Infrastructure.Services
 {
@@ -153,8 +154,18 @@ namespace BabyPOS_Web2.Infrastructure.Services
 
         public async Task<List<ShopDto>> GetShopsForManagementAsync()
         {
-            var result = await SendRequestAsync<List<ShopDto>>("api/shops/manage", HttpMethod.Get, requiresAuth: true);
-            return result ?? new List<ShopDto>();
+            var result = await SendRequestAsync<List<ShopWithFoodsDto>>("api/shops/manage", HttpMethod.Get, requiresAuth: true);
+            if (result == null) return new List<ShopDto>();
+            
+            // Convert ShopWithFoodsDto to ShopDto
+            return result.Select(shop => new ShopDto
+            {
+                Id = shop.Id,
+                Name = shop.Name,
+                Description = shop.Description,
+                OwnerId = 0, // Will be set by API based on JWT
+                OwnerName = null
+            }).ToList();
         }
 
         public async Task<List<MenuItemDto>> GetShopMenuItemsAsync(int shopId)
