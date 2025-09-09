@@ -12,6 +12,12 @@
     <div class="d-flex justify-content-between align-items-center mb-3">
         <button class="btn btn-outline-secondary" @onclick="GoBack">&lt; Back</button>
         <div class="d-flex gap-2">
+            <button class="btn btn-warning" @onclick="GoToOrders">
+                <i class="bi bi-list-check"></i> จัดการ Order
+            </button>
+            <button class="btn btn-info" @onclick="ShowTableManagementModal">
+                <i class="bi bi-table"></i> จัดการโต๊ะ
+            </button>
             <button class="btn btn-success" @onclick="ShowAddFoodModal">+ เพิ่มรายการอาหาร</button>
         </div>
     </div>
@@ -139,6 +145,113 @@
     </div>
 }
 
+<!-- Table Management Modal -->
+@if (showTableModal)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-table"></i> จัดการโต๊ะ
+                    </h5>
+                    <button type="button" class="btn-close" @onclick="HideTableModal"></button>
+                </div>
+                <div class="modal-body">
+                    @if (!string.IsNullOrEmpty(tableErrorMessage))
+                    {
+                        <div class="alert alert-danger">
+                            @tableErrorMessage
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(tableSuccessMessage))
+                    {
+                        <div class="alert alert-success">
+                            @tableSuccessMessage
+                        </div>
+                    }
+
+                    <!-- Add New Table Form -->
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h6 class="mb-0">เพิ่มโต๊ะใหม่</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div class="mb-3">
+                                        <label class="form-label">ชื่อโต๊ะ</label>
+                                        <input type="text" class="form-control" @bind="newTableName" placeholder="ชื่อโต๊ะ" />
+                                    </div>
+                                </div>
+                                <div class="col-md-4 d-flex align-items-end">
+                                    <button class="btn btn-success w-100" @onclick="AddTableAsync" disabled="@isAddingTable">
+                                        @if (isAddingTable)
+                                        {
+                                            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                        }
+                                        <i class="bi bi-plus"></i> เพิ่มโต๊ะ
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tables List -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">รายการโต๊ะ</h6>
+                        </div>
+                        <div class="card-body">
+                            @if (isLoadingTables)
+                            {
+                                <div class="text-center py-3">
+                                    <div class="spinner-border" role="status"></div>
+                                    <div>กำลังโหลดโต๊ะ...</div>
+                                </div>
+                            }
+                            else if (tables.Count == 0)
+                            {
+                                <div class="text-center py-3 text-muted">
+                                    <i class="bi bi-table fs-2"></i>
+                                    <div>ยังไม่มีโต๊ะ</div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="row">
+                                    @foreach (var table in tables)
+                                    {
+                                        <div class="col-md-6 mb-2">
+                                            <div class="card">
+                                                <div class="card-body py-2">
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <div>
+                                                            <h6 class="mb-0">@table.Name</h6>
+                                                            <small class="text-muted">ID: @table.Id</small>
+                                                        </div>
+                                                        <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteTableAsync(table.Id)">
+                                                            <i class="bi bi-trash"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="HideTableModal">ปิด</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
 @code {
     [Parameter] public int ShopId { get; set; }
     
@@ -183,6 +296,11 @@
     void GoBack() 
     { 
         NavigationManager.NavigateTo("/shops"); 
+    }
+
+    void GoToOrders()
+    {
+        NavigationManager.NavigateTo($"/shop-orders/{ShopId}");
     }
 
     async Task LoadShopInfoAsync()
@@ -365,5 +483,139 @@
         {
             errorMessage = $"เกิดข้อผิดพลาดในการลบ: {ex.Message}";
         }
+    }
+
+    // Table Management
+    bool showTableModal = false;
+    List<TableDto> tables = new();
+    bool isAddingTable = false;
+    string newTableName = "";
+    int nextTableNumber = 1;
+    bool isLoadingTables = false;
+    string tableErrorMessage = "";
+    string tableSuccessMessage = "";
+
+    void ShowTableManagementModal()
+    {
+        showTableModal = true;
+        _ = LoadTablesAsync();
+    }
+
+    void HideTableModal()
+    {
+        showTableModal = false;
+        newTableName = "";
+        tableErrorMessage = "";
+        tableSuccessMessage = "";
+    }
+
+    async Task LoadTablesAsync()
+    {
+        try
+        {
+            isLoadingTables = true;
+            tables = await ApiService.GetTablesByShopAsync(ShopId);
+            
+            // Calculate next table number
+            nextTableNumber = tables.Count + 1;
+            newTableName = $"โต๊ะ {nextTableNumber}";
+        }
+        catch (Exception ex)
+        {
+            tableErrorMessage = $"เกิดข้อผิดพลาดในการโหลดโต๊ะ: {ex.Message}";
+        }
+        finally
+        {
+            isLoadingTables = false;
+            StateHasChanged();
+        }
+    }
+
+    async Task AddTableAsync()
+    {
+        if (string.IsNullOrWhiteSpace(newTableName)) return;
+
+        try
+        {
+            isAddingTable = true;
+            tableErrorMessage = "";
+            tableSuccessMessage = "";
+
+            var createTableDto = new CreateTableDto
+            {
+                Name = newTableName.Trim(),
+                ShopId = ShopId
+            };
+
+            var result = await ApiService.CreateTableAsync(createTableDto);
+            if (result != null)
+            {
+                await LoadTablesAsync();
+                tableSuccessMessage = "เพิ่มโต๊ะสำเร็จ!";
+                
+                // Auto-generate next table name
+                nextTableNumber = tables.Count + 1;
+                newTableName = $"โต๊ะ {nextTableNumber}";
+
+                // Clear success message after 3 seconds
+                _ = Task.Delay(3000).ContinueWith(_ => 
+                {
+                    InvokeAsync(() => 
+                    {
+                        tableSuccessMessage = string.Empty;
+                        StateHasChanged();
+                    });
+                });
+            }
+            else
+            {
+                tableErrorMessage = "ไม่สามารถเพิ่มโต๊ะได้";
+            }
+        }
+        catch (Exception ex)
+        {
+            tableErrorMessage = $"เกิดข้อผิดพลาดในการเพิ่มโต๊ะ: {ex.Message}";
+        }
+        finally
+        {
+            isAddingTable = false;
+        }
+    }
+
+    async Task DeleteTableAsync(int tableId)
+    {
+        if (!await JS.InvokeAsync<bool>("confirm", "ยืนยันการลบโต๊ะนี้?")) return;
+        
+        try
+        {
+            tableErrorMessage = "";
+            tableSuccessMessage = "";
+
+            var success = await ApiService.DeleteTableAsync(tableId);
+            if (success)
+            {
+                await LoadTablesAsync();
+                tableSuccessMessage = "ลบโต๊ะสำเร็จ!";
+                
+                // Clear success message after 3 seconds
+                _ = Task.Delay(3000).ContinueWith(_ => 
+                {
+                    InvokeAsync(() => 
+                    {
+                        tableSuccessMessage = string.Empty;
+                        StateHasChanged();
+                    });
+                });
+            }
+            else
+            {
+                tableErrorMessage = "ไม่สามารถลบโต๊ะได้";
+            }
+        }
+        catch (Exception ex)
+        {
+            tableErrorMessage = $"เกิดข้อผิดพลาดในการลบโต๊ะ: {ex.Message}";
+        }
+    }
     }
 }

@@ -27,6 +27,7 @@ namespace BabyPOS_API.Controllers
                 // Create order record
                 var order = new Order
                 {
+                    ShopId = request.ShopId,
                     TableId = request.TableId > 0 ? request.TableId : null,
                     CreatedAt = DateTime.UtcNow,
                     IsClosed = false,
@@ -123,7 +124,7 @@ namespace BabyPOS_API.Controllers
                     .Include(o => o.Table)
                     .Include(o => o.OrderItems)
                         .ThenInclude(oi => oi.MenuItem)
-                    .Where(o => o.OrderItems.Any(oi => oi.MenuItem != null && oi.MenuItem.ShopId == shopId))
+                    .Where(o => o.ShopId == shopId)
                     .OrderBy(o => o.CreatedAt)
                     .ToListAsync();
 
@@ -147,7 +148,7 @@ namespace BabyPOS_API.Controllers
     public class CreateOrderRequest
     {
         public int ShopId { get; set; }
-        public int TableId { get; set; }
+        public int TableId { get; set; } // 0 means no table (takeaway)
         public string? ServiceType { get; set; }
         public List<CreateOrderItemRequest> Items { get; set; } = new();
     }

@@ -1,0 +1,714 @@
+@page "/shop-orders/{ShopId:int}"
+@using BabyPOS_Web2.Application.DTOs
+@using BabyPOS_Web2.Domain.Models
+@using BabyPOS_Web2.Domain.Enums
+@inject BabyPOS_Web2.Infrastructure.Services.IApiService ApiService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JS
+
+<div class="container py-3">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <button class="btn btn-outline-secondary" @onclick="GoBack">
+            <i class="bi bi-arrow-left"></i> กลับ
+        </button>
+        <h2 class="mb-0">จัดการออเดอร์ - @ShopName</h2>
+        <button class="btn btn-success" @onclick="RefreshOrders">
+            <i class="bi bi-arrow-clockwise"></i> รีเฟรช
+        </button>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">กำลังโหลด...</span>
+            </div>
+            <p class="mt-2">กำลังโหลดออเดอร์...</p>
+        </div>
+    }
+    else
+    {
+        <!-- Tab Navigation -->
+        <ul class="nav nav-tabs mb-3">
+            <li class="nav-item">
+                <button class="nav-link @(activeTab == "queue" ? "active" : "")" 
+                        @onclick='() => SetActiveTab("queue")'>
+                    <i class="bi bi-clock"></i> แถว Queue (@QueueOrders.Count())
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link @(activeTab == "ready" ? "active" : "")" 
+                        @onclick='() => SetActiveTab("ready")'>
+                    <i class="bi bi-check-circle"></i> รอเช็คบิล (@ReadyOrders.Count())
+                </button>
+            </li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content">
+            <!-- Queue Tab -->
+            @if (activeTab == "queue")
+            {
+                <div class="row g-3">
+                    @if (!QueueOrders.Any())
+                    {
+                        <div class="col-12">
+                            <div class="alert alert-info text-center">
+                                <i class="bi bi-info-circle"></i>
+                                ไม่มีออเดอร์ในแถว
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        @foreach (var order in QueueOrders.OrderBy(o => o.CreatedAt))
+                        {
+                            <div class="col-12 col-md-6 col-lg-4">
+                                <div class="card h-100 @GetOrderCardClass(order.Status)">
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+                                        <strong>ออเดอร์ #@order.Id</strong>
+                                        <span class="badge @GetStatusBadgeClass(order.Status)">@GetStatusText(order.Status)</span>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-2">
+                                            <small class="text-muted">
+                                                <i class="bi bi-clock"></i> @order.CreatedAt.ToString("HH:mm")
+                                            </small>
+                                        </div>
+                                        
+                                        <div class="mb-2">
+                                            <small class="text-muted">
+                                                <i class="bi bi-table"></i> โต๊ะ: @(order.TableId.HasValue ? order.TableName : "-")
+                                            </small>
+                                        </div>
+
+                                        <div class="mb-2">
+                                            <small class="text-muted">
+                                                <i class="bi bi-bag"></i> @GetServiceTypeDisplayName(order.ServiceType)
+                                            </small>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <span class="text-muted">จำนวนรายการ: @order.OrderItems.Count รายการ</span>
+                                        </div>
+                                    </div>
+                                    <div class="card-footer">
+                                        <button class="btn btn-info btn-sm w-100" 
+                                                @onclick='() => ShowOrderDetails(order)'>
+                                            <i class="bi bi-eye"></i> ดูรายละเอียด
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            }
+
+            <!-- Ready Tab -->
+            @if (activeTab == "ready")
+            {
+                <!-- Table Filter and Bill Summary -->
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label">เลือกโต๊ะ:</label>
+                        <select class="form-select" @onchange="@((ChangeEventArgs e) => OnTableFilterChanged(e))" value="@selectedTableFilter">
+                            <option value="">-- ทุกโต๊ะ --</option>
+                            @foreach (var table in AvailableTablesInReady)
+                            {
+                                <option value="@table.Id">โต๊ะ @table.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        @if (!string.IsNullOrEmpty(selectedTableFilter))
+                        {
+                            <button class="btn btn-warning me-2" @onclick="GenerateTableBill" disabled="@isProcessing">
+                                <i class="bi bi-receipt"></i> รวมบิลโต๊ะนี้
+                            </button>
+                        }
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end justify-content-end">
+                        @if (FilteredReadyOrders.Any())
+                        {
+                            <span class="badge bg-info">ออเดอร์: @FilteredReadyOrders.Count รายการ</span>
+                        }
+                    </div>
+                </div>
+
+                <div class="row g-3">
+                    @if (!FilteredReadyOrders.Any())
+                    {
+                        <div class="col-12">
+                            <div class="alert alert-info text-center">
+                                <i class="bi bi-info-circle"></i>
+                                @if (!string.IsNullOrEmpty(selectedTableFilter))
+                                {
+                                    <span>ไม่มีออเดอร์รอเช็คบิลสำหรับโต๊ะนี้</span>
+                                }
+                                else
+                                {
+                                    <span>ไม่มีออเดอร์รอเช็คบิล</span>
+                                }
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        @foreach (var order in FilteredReadyOrders.OrderBy(o => o.CreatedAt))
+                        {
+                            <div class="col-12 col-md-6 col-lg-4">
+                                <div class="card h-100 border-success">
+                                    <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                                        <strong>ออเดอร์ #@order.Id</strong>
+                                        <span class="badge bg-light text-dark">พร้อมเช็คบิล</span>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-2">
+                                            <small class="text-muted">
+                                                <i class="bi bi-clock"></i> @order.CreatedAt.ToString("HH:mm")
+                                            </small>
+                                        </div>
+                                        
+                                        <div class="mb-2">
+                                            <small class="text-muted">
+                                                <i class="bi bi-table"></i> โต๊ะ: @(order.TableId.HasValue ? order.TableName : "-")
+                                            </small>
+                                        </div>
+
+                                        <div class="mb-2">
+                                            <small class="text-muted">
+                                                <i class="bi bi-bag"></i> @GetServiceTypeDisplayName(order.ServiceType)
+                                            </small>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <span class="text-muted">จำนวนรายการ: @order.OrderItems.Count รายการ</span>
+                                        </div>
+                                    </div>
+                                    <div class="card-footer">
+                                        <button class="btn btn-info btn-sm w-100" 
+                                                @onclick='() => ShowOrderDetails(order)'>
+                                            <i class="bi bi-eye"></i> ดูรายละเอียด
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            }
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(successMessage))
+    {
+        <div class="alert alert-success mt-3">
+            @successMessage
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger mt-3">
+            @errorMessage
+        </div>
+    }
+
+    <!-- Bill Summary Modal -->
+    @if (showBillSummary && tableBillOrders.Any())
+    {
+        <div class="modal show d-block" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">สรุปบิล - โต๊ะ @selectedTableName</h5>
+                        <button type="button" class="btn-close" @onclick="CloseBillSummary"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <strong>โต๊ะ:</strong> @selectedTableName
+                            </div>
+                            <div class="col-6">
+                                <strong>จำนวนออเดอร์:</strong> @tableBillOrders.Count รายการ
+                            </div>
+                        </div>
+                        
+                        <h6>รายการทั้งหมด</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>ออเดอร์</th>
+                                        <th>รายการ</th>
+                                        <th class="text-center">จำนวน</th>
+                                        <th class="text-end">ราคา</th>
+                                        <th class="text-end">รวม</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var order in tableBillOrders)
+                                    {
+                                        @foreach (var item in order.OrderItems)
+                                        {
+                                            <tr>
+                                                <td>#@order.Id</td>
+                                                <td>@item.MenuItemName</td>
+                                                <td class="text-center">@item.Quantity</td>
+                                                <td class="text-end">฿@item.Price</td>
+                                                <td class="text-end">฿@(item.Price * item.Quantity)</td>
+                                            </tr>
+                                        }
+                                    }
+                                </tbody>
+                                <tfoot>
+                                    <tr class="table-active">
+                                        <th colspan="4">รวมทั้งสิ้น</th>
+                                        <th class="text-end">฿@TotalTableBillAmount</th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-success" @onclick="CompleteTableBill" disabled="@isProcessing">
+                            <i class="bi bi-check-circle"></i> ชำระเงิน & ปิดบิล
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" @onclick="CloseBillSummary">ยกเลิก</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Order Details Modal -->
+    @if (selectedOrder != null)
+    {
+        <div class="modal show" style="display: block; background-color: rgba(0,0,0,0.5);" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">ออเดอร์ #@selectedOrder.Id</h5>
+                        <button type="button" class="btn-close" @onclick="CloseOrderDetails"></button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- Order Info -->
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <strong>เวลาสั่ง:</strong> @selectedOrder.CreatedAt.ToString("HH:mm")
+                            </div>
+                            <div class="col-6">
+                                <strong>โต๊ะ:</strong> @(selectedOrder.TableId.HasValue ? selectedOrder.TableName : "-")
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <strong>ประเภท:</strong> @GetServiceTypeDisplayName(selectedOrder.ServiceType)
+                            </div>
+                            <div class="col-6">
+                                <strong>สถานะ:</strong> <span class="badge @GetStatusBadgeClass(selectedOrder.Status)">@GetStatusText(selectedOrder.Status)</span>
+                            </div>
+                        </div>
+
+                        <!-- Order Items -->
+                        <h6>รายการอาหาร</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>รายการ</th>
+                                        <th class="text-center">จำนวน</th>
+                                        <th class="text-end">ราคา</th>
+                                        <th class="text-end">รวม</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in selectedOrder.OrderItems)
+                                    {
+                                        <tr>
+                                            <td>@item.MenuItemName</td>
+                                            <td class="text-center">@item.Quantity</td>
+                                            <td class="text-end">฿@item.Price</td>
+                                            <td class="text-end">฿@(item.Price * item.Quantity)</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                                <tfoot>
+                                    <tr class="table-active">
+                                        <th colspan="3">รวมทั้งสิ้น</th>
+                                        <th class="text-end">฿@selectedOrder.TotalAmount</th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        @if (selectedOrder.Status == "Pending")
+                        {
+                            <button type="button" class="btn btn-secondary" @onclick="() => CancelOrder(selectedOrder.Id)" disabled="@isUpdating">
+                                <i class="bi bi-x-circle"></i> ยกเลิก
+                            </button>
+                            <button type="button" class="btn btn-primary" @onclick="() => AcceptOrder(selectedOrder.Id)" disabled="@isUpdating">
+                                <i class="bi bi-check-circle"></i> รับออเดอร์
+                            </button>
+                        }
+                        else if (selectedOrder.Status == "InProgress")
+                        {
+                            <button type="button" class="btn btn-success" @onclick="() => MarkOrderReady(selectedOrder.Id)" disabled="@isUpdating">
+                                <i class="bi bi-check"></i> อาหารพร้อม
+                            </button>
+                        }
+                        else if (selectedOrder.Status == "Ready")
+                        {
+                            <button type="button" class="btn btn-danger" @onclick="() => CloseOrder(selectedOrder.Id)" disabled="@isUpdating">
+                                <i class="bi bi-receipt"></i> เช็คบิลแล้ว
+                            </button>
+                        }
+                        <button type="button" class="btn btn-outline-secondary" @onclick="CloseOrderDetails">ปิด</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public int ShopId { get; set; }
+    
+    string ShopName = "";
+    List<OrderDto> orders = new();
+    List<TableDto> tables = new();
+    bool isLoading = true;
+    bool isUpdating = false;
+    bool isProcessing = false;
+    string activeTab = "queue";
+    string errorMessage = string.Empty;
+    string successMessage = string.Empty;
+    OrderDto? selectedOrder = null;
+
+    // Table filtering and bill summary
+    string selectedTableFilter = "";
+    bool showBillSummary = false;
+    List<OrderDto> tableBillOrders = new();
+    string selectedTableName = "";
+
+    IEnumerable<OrderDto> QueueOrders => orders.Where(o => o.Status == "Pending" || o.Status == "InProgress");
+    IEnumerable<OrderDto> ReadyOrders => orders.Where(o => o.Status == "Ready");
+    
+    // Filtered ready orders based on table selection
+    List<OrderDto> FilteredReadyOrders => 
+        string.IsNullOrEmpty(selectedTableFilter) 
+            ? ReadyOrders.ToList() 
+            : ReadyOrders.Where(o => o.TableId?.ToString() == selectedTableFilter).ToList();
+    
+    // Available tables that have ready orders
+    IEnumerable<TableDto> AvailableTablesInReady => 
+        tables.Where(t => ReadyOrders.Any(o => o.TableId == t.Id));
+    
+    // Calculate total amount for table bill
+    decimal TotalTableBillAmount => tableBillOrders.Sum(o => o.OrderItems.Sum(item => item.Price * item.Quantity));
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadShopInfo();
+        await LoadTables();
+        await LoadOrders();
+    }
+
+    async Task LoadShopInfo()
+    {
+        try
+        {
+            var shop = await ApiService.GetShopAsync(ShopId);
+            ShopName = shop?.Name ?? $"ร้านหมายเลข {ShopId}";
+        }
+        catch
+        {
+            ShopName = $"ร้านหมายเลข {ShopId}";
+        }
+    }
+
+    async Task LoadTables()
+    {
+        try
+        {
+            tables = await ApiService.GetTablesByShopAsync(ShopId);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading tables: {ex.Message}");
+        }
+    }
+
+    async Task LoadOrders()
+    {
+        try
+        {
+            isLoading = true;
+            errorMessage = string.Empty;
+            
+            // Load orders from API
+            orders = await ApiService.GetOrdersByShopAsync(ShopId);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"เกิดข้อผิดพลาดในการโหลดออเดอร์: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    async Task RefreshOrders()
+    {
+        await LoadOrders();
+    }
+
+    async Task GenerateTableBill()
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(selectedTableFilter)) return;
+
+            var tableId = int.Parse(selectedTableFilter);
+            var selectedTable = tables.FirstOrDefault(t => t.Id == tableId);
+            
+            if (selectedTable == null) return;
+
+            // Get ready orders for this table
+            tableBillOrders = ReadyOrders.Where(o => o.TableId == tableId).ToList();
+            selectedTableName = selectedTable.Name;
+            
+            if (tableBillOrders.Any())
+            {
+                showBillSummary = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"เกิดข้อผิดพลาดในการสร้างบิล: {ex.Message}";
+        }
+    }
+
+    async Task CompleteTableBill()
+    {
+        try
+        {
+            isProcessing = true;
+            
+            // Complete all orders in this table bill
+            var tasks = tableBillOrders.Select(order => 
+                ApiService.UpdateOrderStatusAsync(order.Id, new UpdateOrderStatusDto { Status = "Completed" })
+            );
+            
+            await Task.WhenAll(tasks);
+            
+            // Refresh orders and close modal
+            await LoadOrders();
+            CloseBillSummary();
+            
+            successMessage = $"ชำระเงินเรียบร้อย - โต๊ะ {selectedTableName}";
+            
+            // Clear success message after 3 seconds
+            _ = Task.Delay(3000).ContinueWith(_ => { successMessage = string.Empty; StateHasChanged(); });
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"เกิดข้อผิดพลาดในการชำระเงิน: {ex.Message}";
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+
+    void CloseBillSummary()
+    {
+        showBillSummary = false;
+        tableBillOrders.Clear();
+        selectedTableName = "";
+    }
+
+    void OnTableFilterChanged(ChangeEventArgs e)
+    {
+        selectedTableFilter = e.Value?.ToString() ?? "";
+        StateHasChanged();
+    }
+
+    void SetActiveTab(string tab)
+    {
+        activeTab = tab;
+    }
+
+    void GoBack()
+    {
+        NavigationManager.NavigateTo("/orders-management");
+    }
+
+    string GetOrderCardClass(string status)
+    {
+        return status switch
+        {
+            "Pending" => "border-warning",
+            "InProgress" => "border-primary",
+            "Ready" => "border-success",
+            _ => ""
+        };
+    }
+
+    string GetStatusBadgeClass(string status)
+    {
+        return status switch
+        {
+            "Pending" => "bg-warning text-dark",
+            "InProgress" => "bg-primary",
+            "Ready" => "bg-success",
+            _ => "bg-secondary"
+        };
+    }
+
+    string GetStatusText(string status)
+    {
+        return status switch
+        {
+            "Pending" => "รอดำเนินการ",
+            "InProgress" => "กำลังทำ",
+            "Ready" => "พร้อม",
+            "Completed" => "เสร็จสิ้น",
+            _ => status
+        };
+    }
+
+    string GetServiceTypeDisplayName(string serviceType)
+    {
+        var enumValue = ServiceTypeExtensions.FromApiValue(serviceType);
+        return enumValue.ToDisplayName();
+    }
+
+    void ShowOrderDetails(OrderDto order)
+    {
+        selectedOrder = order;
+    }
+
+    void CloseOrderDetails()
+    {
+        selectedOrder = null;
+    }
+
+    async Task AcceptOrder(int orderId)
+    {
+        await UpdateOrderStatus(orderId, "InProgress");
+        CloseOrderDetails();
+    }
+
+    async Task MarkOrderReady(int orderId)
+    {
+        await UpdateOrderStatus(orderId, "Ready");
+        CloseOrderDetails();
+    }
+
+    async Task CancelOrder(int orderId)
+    {
+        try
+        {
+            var confirmed = await JS.InvokeAsync<bool>("confirm", "ต้องการยกเลิกออเดอร์นี้ใช่หรือไม่?");
+            if (!confirmed) return;
+
+            await UpdateOrderStatus(orderId, "Cancelled");
+            CloseOrderDetails();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"เกิดข้อผิดพลาดในการยกเลิกออเดอร์: {ex.Message}";
+        }
+    }
+
+    async Task UpdateOrderStatus(int orderId, string newStatus)
+    {
+        try
+        {
+            isUpdating = true;
+            errorMessage = string.Empty;
+            
+            // Update order status via API
+            var updateDto = new UpdateOrderStatusDto { Status = newStatus };
+            var success = await ApiService.UpdateOrderStatusAsync(orderId, updateDto);
+            
+            if (success)
+            {
+                // Refresh orders to get updated data
+                await LoadOrders();
+                successMessage = $"อัพเดทสถานะออเดอร์ #{orderId} เป็น {GetStatusText(newStatus)} แล้ว";
+                
+                // Clear message after 3 seconds
+                _ = Task.Delay(3000).ContinueWith(_ => 
+                {
+                    InvokeAsync(() => 
+                    {
+                        successMessage = string.Empty;
+                        StateHasChanged();
+                    });
+                });
+            }
+            else
+            {
+                errorMessage = "ไม่สามารถอัพเดทสถานะออเดอร์ได้";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"เกิดข้อผิดพลาดในการอัพเดทสถานะ: {ex.Message}";
+        }
+        finally
+        {
+            isUpdating = false;
+        }
+    }
+
+    async Task CloseOrder(int orderId)
+    {
+        try
+        {
+            var confirmed = await JS.InvokeAsync<bool>("confirm", "ต้องการปิดออเดอร์และเช็คบิลแล้วใช่หรือไม่?");
+            if (!confirmed) return;
+
+            isUpdating = true;
+            errorMessage = string.Empty;
+            
+            // Close order via API
+            var success = await ApiService.CloseOrderAsync(orderId);
+            
+            if (success)
+            {
+                // Refresh orders to get updated data
+                await LoadOrders();
+                successMessage = $"ปิดออเดอร์ #{orderId} แล้ว";
+                
+                // Clear message after 3 seconds
+                _ = Task.Delay(3000).ContinueWith(_ => 
+                {
+                    InvokeAsync(() => 
+                    {
+                        successMessage = string.Empty;
+                        StateHasChanged();
+                    });
+                });
+            }
+            else
+            {
+                errorMessage = "ไม่สามารถปิดออเดอร์ได้";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"เกิดข้อผิดพลาดในการปิดออเดอร์: {ex.Message}";
+        }
+        finally
+        {
+            isUpdating = false;
+        }
+    }
+}

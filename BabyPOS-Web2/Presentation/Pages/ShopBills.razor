@@ -1,0 +1,419 @@
+@page "/shop-bills/{ShopId:int}"
+@using BabyPOS_Web2.Application.DTOs
+@using BabyPOS_Web2.Infrastructure.Services
+@using BabyPOS_Web2.Domain.Enums
+@inject IApiService ApiService
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>📋 จัดการบิล - @ShopName</h2>
+        <div>
+            <button class="btn btn-primary me-2" @onclick="GenerateBills" disabled="@isGenerating">
+                @if (isGenerating)
+                {
+                    <span class="spinner-border spinner-border-sm me-2"></span>
+                }
+                <i class="bi bi-receipt"></i> สร้างบิลจากออเดอร์พร้อม
+            </button>
+            <button class="btn btn-outline-primary" @onclick="LoadBills">
+                <i class="bi bi-arrow-clockwise"></i> รีเฟรช
+            </button>
+        </div>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="d-flex justify-content-center">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">กำลังโหลด...</span>
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- Tabs -->
+        <ul class="nav nav-tabs mb-4">
+            <li class="nav-item">
+                <button class="nav-link @(activeTab == "unpaid" ? "active" : "")" @onclick='() => SetActiveTab("unpaid")'>
+                    รอชำระเงิน (@UnpaidBills.Count)
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link @(activeTab == "paid" ? "active" : "")" @onclick='() => SetActiveTab("paid")'>
+                    ชำระแล้ว (@PaidBills.Count)
+                </button>
+            </li>
+        </ul>
+
+        <!-- Unpaid Bills Tab -->
+        @if (activeTab == "unpaid")
+        {
+            <div class="row g-3">
+                @if (!UnpaidBills.Any())
+                {
+                    <div class="col-12">
+                        <div class="alert alert-info text-center">
+                            <i class="bi bi-info-circle"></i>
+                            ไม่มีบิลรอชำระเงิน
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    @foreach (var bill in UnpaidBills.OrderBy(b => b.CreatedAt))
+                    {
+                        <div class="col-12 col-md-6 col-lg-4">
+                            <div class="card h-100 border-warning">
+                                <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+                                    <strong>บิล #@bill.Id</strong>
+                                    <span class="badge bg-secondary">รอชำระ</span>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-2">
+                                        <small class="text-muted">
+                                            <i class="bi bi-clock"></i> @bill.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+                                        </small>
+                                    </div>
+                                    
+                                    <div class="mb-2">
+                                        <small class="text-muted">
+                                            <i class="bi bi-table"></i> โต๊ะ: @(bill.TableName ?? "-")
+                                        </small>
+                                    </div>
+
+                                    <div class="mb-2">
+                                        <small class="text-muted">
+                                            <i class="bi bi-bag"></i> @GetServiceTypeDisplayName(bill.ServiceType)
+                                        </small>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <small class="text-muted">ออเดอร์: @bill.Orders.Count รายการ</small>
+                                    </div>
+                                    
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <span class="fw-bold text-success">รวม: ฿@bill.FinalAmount</span>
+                                    </div>
+                                    
+                                    <div class="d-grid gap-2">
+                                        <button class="btn btn-outline-info btn-sm" @onclick="() => ShowBillDetails(bill)">
+                                            <i class="bi bi-eye"></i> ดูรายละเอียด
+                                        </button>
+                                        <button class="btn btn-success btn-sm" @onclick="() => PayBill(bill.Id)" disabled="@isProcessing">
+                                            <i class="bi bi-credit-card"></i> ชำระเงิน
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        }
+
+        <!-- Paid Bills Tab -->
+        @if (activeTab == "paid")
+        {
+            <div class="row g-3">
+                @if (!PaidBills.Any())
+                {
+                    <div class="col-12">
+                        <div class="alert alert-info text-center">
+                            <i class="bi bi-info-circle"></i>
+                            ไม่มีบิลที่ชำระแล้ว
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    @foreach (var bill in PaidBills.OrderByDescending(b => b.PaidAt))
+                    {
+                        <div class="col-12 col-md-6 col-lg-4">
+                            <div class="card h-100 border-success">
+                                <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                                    <strong>บิล #@bill.Id</strong>
+                                    <span class="badge bg-light text-dark">ชำระแล้ว</span>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-2">
+                                        <small class="text-muted">
+                                            <i class="bi bi-clock"></i> สร้าง: @bill.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+                                        </small>
+                                    </div>
+                                    
+                                    <div class="mb-2">
+                                        <small class="text-success">
+                                            <i class="bi bi-check-circle"></i> ชำระ: @bill.PaidAt?.ToString("dd/MM/yyyy HH:mm")
+                                        </small>
+                                    </div>
+                                    
+                                    <div class="mb-2">
+                                        <small class="text-muted">
+                                            <i class="bi bi-table"></i> โต๊ะ: @(bill.TableName ?? "-")
+                                        </small>
+                                    </div>
+
+                                    <div class="mb-2">
+                                        <small class="text-muted">
+                                            <i class="bi bi-bag"></i> @GetServiceTypeDisplayName(bill.ServiceType)
+                                        </small>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <small class="text-muted">ออเดอร์: @bill.Orders.Count รายการ</small>
+                                    </div>
+                                    
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <span class="fw-bold text-success">รวม: ฿@bill.FinalAmount</span>
+                                    </div>
+                                    
+                                    <div class="d-grid">
+                                        <button class="btn btn-outline-info btn-sm" @onclick="() => ShowBillDetails(bill)">
+                                            <i class="bi bi-eye"></i> ดูรายละเอียด
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        }
+    }
+
+    <!-- Bill Details Modal -->
+    @if (showBillDetails && selectedBill != null)
+    {
+        <div class="modal show d-block" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">รายละเอียดบิล #@selectedBill.Id</h5>
+                        <button type="button" class="btn-close" @onclick="CloseBillDetails"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <strong>วันที่สร้าง:</strong> @selectedBill.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+                            </div>
+                            <div class="col-6">
+                                <strong>โต๊ะ:</strong> @(selectedBill.TableName ?? "-")
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <strong>ประเภท:</strong> @GetServiceTypeDisplayName(selectedBill.ServiceType)
+                            </div>
+                            <div class="col-6">
+                                <strong>สถานะ:</strong> 
+                                <span class="badge @(selectedBill.IsPaid ? "bg-success" : "bg-warning text-dark")">
+                                    @(selectedBill.IsPaid ? "ชำระแล้ว" : "รอชำระ")
+                                </span>
+                            </div>
+                        </div>
+
+                        @if (selectedBill.IsPaid && selectedBill.PaidAt.HasValue)
+                        {
+                            <div class="row mb-3">
+                                <div class="col-12">
+                                    <strong>วันที่ชำระ:</strong> @selectedBill.PaidAt.Value.ToString("dd/MM/yyyy HH:mm")
+                                </div>
+                            </div>
+                        }
+
+                        <!-- Orders in this bill -->
+                        <h6>ออเดอร์ในบิล</h6>
+                        @foreach (var order in selectedBill.Orders)
+                        {
+                            <div class="card mb-2">
+                                <div class="card-body">
+                                    <h6 class="card-title">ออเดอร์ #@order.Id</h6>
+                                    <p class="card-text"><small class="text-muted">@order.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small></p>
+                                    
+                                    <div class="table-responsive">
+                                        <table class="table table-sm">
+                                            <thead>
+                                                <tr>
+                                                    <th>รายการ</th>
+                                                    <th class="text-center">จำนวน</th>
+                                                    <th class="text-end">ราคา</th>
+                                                    <th class="text-end">รวม</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var item in order.OrderItems)
+                                                {
+                                                    <tr>
+                                                        <td>@item.MenuItemName</td>
+                                                        <td class="text-center">@item.Quantity</td>
+                                                        <td class="text-end">฿@item.Price</td>
+                                                        <td class="text-end">฿@(item.Price * item.Quantity)</td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+
+                        <div class="border-top pt-3">
+                            <div class="d-flex justify-content-between">
+                                <h5>รวมทั้งสิ้น</h5>
+                                <h5 class="text-success">฿@selectedBill.FinalAmount</h5>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        @if (!selectedBill.IsPaid)
+                        {
+                            <button type="button" class="btn btn-success" @onclick="() => PayBill(selectedBill.Id)" disabled="@isProcessing">
+                                <i class="bi bi-credit-card"></i> ชำระเงิน
+                            </button>
+                        }
+                        <button type="button" class="btn btn-outline-secondary" @onclick="CloseBillDetails">ปิด</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public int ShopId { get; set; }
+    
+    string ShopName = "";
+    List<BillDto> bills = new();
+    bool isLoading = true;
+    bool isGenerating = false;
+    bool isProcessing = false;
+    string activeTab = "unpaid";
+    
+    // Modal state
+    bool showBillDetails = false;
+    BillDto? selectedBill = null;
+
+    List<BillDto> UnpaidBills => bills.Where(b => !b.IsPaid).ToList();
+    List<BillDto> PaidBills => bills.Where(b => b.IsPaid).ToList();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadShopInfo();
+        await LoadBills();
+    }
+
+    async Task LoadShopInfo()
+    {
+        try
+        {
+            var shop = await ApiService.GetShopAsync(ShopId);
+            ShopName = shop?.Name ?? "Unknown Shop";
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading shop info: {ex.Message}");
+            ShopName = "ร้านอาหาร";
+        }
+    }
+
+    async Task LoadBills()
+    {
+        try
+        {
+            isLoading = true;
+            bills = await ApiService.GetBillsByShopAsync(ShopId);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading bills: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    async Task GenerateBills()
+    {
+        try
+        {
+            isGenerating = true;
+            var result = await ApiService.GenerateBillsAsync(ShopId);
+            
+            if (result != null)
+            {
+                // Refresh bills list
+                await LoadBills();
+                
+                // Show success message
+                Console.WriteLine($"สร้างบิลสำเร็จ: {result.Message}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error generating bills: {ex.Message}");
+        }
+        finally
+        {
+            isGenerating = false;
+        }
+    }
+
+    async Task PayBill(int billId)
+    {
+        try
+        {
+            isProcessing = true;
+            var success = await ApiService.PayBillAsync(billId);
+            
+            if (success)
+            {
+                await LoadBills();
+                
+                // Close modal if open
+                if (showBillDetails && selectedBill?.Id == billId)
+                {
+                    CloseBillDetails();
+                }
+                
+                Console.WriteLine("ชำระเงินสำเร็จ");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error paying bill: {ex.Message}");
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+
+    void SetActiveTab(string tab)
+    {
+        activeTab = tab;
+    }
+
+    void ShowBillDetails(BillDto bill)
+    {
+        selectedBill = bill;
+        showBillDetails = true;
+    }
+
+    void CloseBillDetails()
+    {
+        showBillDetails = false;
+        selectedBill = null;
+    }
+
+    string GetServiceTypeDisplayName(string serviceType)
+    {
+        return serviceType switch
+        {
+            "dineIn" => "ทานที่ร้าน",
+            "takeaway" => "กลับบ้าน",
+            "delivery" => "ส่ง",
+            _ => serviceType
+        };
+    }
+}

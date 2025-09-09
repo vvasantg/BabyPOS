@@ -1,0 +1,421 @@
+@page "/shop-menu/{ShopId:int}"
+@using BabyPOS_Web2.Application.DTOs
+@using BabyPOS_Web2.Domain.Models
+@inject BabyPOS_Web2.Infrastructure.Services.IApiService ApiService
+@inject IJSRuntime JS
+@inject NavigationManager NavigationManager
+
+<div class="container py-3">
+    <!-- Header Section with Cart -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2 class="text-primary">🍽️ เมนูอาหาร</h2>
+            @if (currentShop != null)
+            {
+                <p class="text-muted">@currentShop.Name - @currentShop.Description</p>
+            }
+            else
+            {
+                <p class="text-muted">Shop ID: @ShopId</p>
+            }
+        </div>
+        <div class="col-md-4 text-end">
+            <!-- Cart Icon with Badge -->
+            <button class="btn btn-outline-primary position-relative" @onclick="ShowCartModal">
+                <i class="fas fa-shopping-cart fa-lg"></i>
+                @if (cartItems.Count > 0)
+                {
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                        @cartItems.Sum(x => x.Quantity)
+                        <span class="visually-hidden">รายการในตะกร้า</span>
+                    </span>
+                }
+            </button>
+            <span class="ms-2 text-muted">ตะกร้าสินค้า</span>
+        </div>
+    </div>
+
+    <!-- Debug Info -->
+    <div class="alert alert-info">
+        <h6>Debug Information:</h6>
+        <p>Shop ID: @ShopId</p>
+        <p>Loading: @isLoading</p>
+        <p>Current Shop: @(currentShop?.Name ?? "null")</p>
+        <p>Menu Items Count: @menuItems.Count</p>
+        <p>Error: @errorMessage</p>
+    </div>
+
+    <!-- Loading State -->
+    @if (isLoading)
+    {
+        <div class="text-center">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">กำลังโหลด...</span>
+            </div>
+            <p class="mt-2">กำลังโหลดเมนู...</p>
+        </div>
+    }
+    <!-- Error State -->
+    else if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger">
+            <h4>เกิดข้อผิดพลาด</h4>
+            <p>@errorMessage</p>
+            <button class="btn btn-primary" @onclick="LoadData">ลองใหม่</button>
+        </div>
+    }
+    <!-- Menu Items Grid -->
+    else if (menuItems != null && menuItems.Any())
+    {
+        <div class="row g-3">
+            @foreach (var item in menuItems)
+            {
+                <div class="col-md-4 col-sm-6">
+                    <div class="card h-100 shadow-sm menu-item-card">
+                        @if (!string.IsNullOrEmpty(item.ImagePath))
+                        {
+                            <img src="@item.ImagePath" class="card-img-top menu-item-image" alt="@item.Name" />
+                        }
+                        else
+                        {
+                            <div class="card-img-top menu-item-placeholder d-flex align-items-center justify-content-center">
+                                <i class="fas fa-utensils fa-3x text-muted"></i>
+                            </div>
+                        }
+                        
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">@item.Name</h5>
+                            <p class="card-text text-muted small flex-grow-1">@item.Name</p>
+                            
+                            <div class="mb-2">
+                                <span class="badge bg-secondary">@item.Category</span>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="h5 text-primary mb-0">฿@item.Price.ToString("N0")</span>
+                                <button class="btn btn-primary btn-sm" @onclick="() => AddToCartDirectly(item)">
+                                    <i class="fas fa-plus"></i> เพิ่มลงตะกร้า
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-5">
+            <i class="fas fa-utensils fa-3x text-muted mb-3"></i>
+            <h4 class="text-muted">ยังไม่มีเมนูอาหาร</h4>
+            <p class="text-muted">ร้านนี้ยังไม่มีเมนูอาหาร โปรดกลับมาใหม่ภายหลัง</p>
+        </div>
+    }
+</div>
+
+<!-- Cart Modal -->
+<div class="modal fade" id="cartModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">ตะกร้าสินค้า</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                @if (cartItems.Any())
+                {
+                    @foreach (var cartItem in cartItems)
+                    {
+                        <div class="row align-items-center mb-3 border-bottom pb-3">
+                            <div class="col-6">
+                                <h6 class="mb-0">@cartItem.MenuItem.Name</h6>
+                                <small class="text-muted">฿@cartItem.MenuItem.Price.ToString("N0")</small>
+                            </div>
+                            <div class="col-3">
+                                <div class="d-flex align-items-center">
+                                    <button class="btn btn-sm btn-outline-secondary" @onclick="() => DecreaseCartQuantity(cartItem)" disabled="@(cartItem.Quantity <= 1)">
+                                        <i class="fas fa-minus"></i>
+                                    </button>
+                                    <span class="mx-2">@cartItem.Quantity</span>
+                                    <button class="btn btn-sm btn-outline-secondary" @onclick="() => IncreaseCartQuantity(cartItem)">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-2">
+                                <strong>฿@((cartItem.MenuItem.Price * cartItem.Quantity).ToString("N0"))</strong>
+                            </div>
+                            <div class="col-1">
+                                <button class="btn btn-sm btn-outline-danger" @onclick="() => RemoveFromCart(cartItem)">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    }
+                    
+                    <hr />
+                    
+                    <!-- Order Summary -->
+                    <div class="bg-light p-3 rounded">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>จำนวนรายการ:</span>
+                            <span>@cartItems.Sum(x => x.Quantity) รายการ</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>ยอดรวม:</span>
+                            <span class="h5 text-primary mb-0">฿@cartItems.Sum(x => x.MenuItem.Price * x.Quantity).ToString("N0")</span>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-4">
+                        <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">ตะกร้าว่าง</h5>
+                        <p class="text-muted">ยังไม่มีรายการในตะกร้า</p>
+                    </div>
+                }
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
+                @if (cartItems.Any())
+                {
+                    <button type="button" class="btn btn-success" @onclick="SubmitOrder" disabled="@isSubmittingOrder">
+                        @if (isSubmittingOrder)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        }
+                        สั่งอาหาร (฿@cartItems.Sum(x => x.MenuItem.Price * x.Quantity).ToString("N0"))
+                    </button>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .menu-item-card {
+        transition: transform 0.2s;
+        cursor: pointer;
+    }
+    
+    .menu-item-card:hover {
+        transform: translateY(-2px);
+    }
+    
+    .menu-item-image {
+        height: 200px;
+        object-fit: cover;
+    }
+    
+    .menu-item-placeholder {
+        height: 200px;
+        background-color: #f8f9fa;
+    }
+</style>
+
+@code {
+    [Parameter] public int ShopId { get; set; }
+    
+    private List<MenuItemDto> menuItems = new();
+    private List<CartItem> cartItems = new();
+    private ShopDto? currentShop;
+    private bool isLoading = true;
+    private bool isSubmittingOrder = false;
+    private string errorMessage = string.Empty;
+
+    public class CartItem
+    {
+        public MenuItemDto MenuItem { get; set; } = new();
+        public int Quantity { get; set; }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        try
+        {
+            isLoading = true;
+            errorMessage = string.Empty;
+            
+            Console.WriteLine($"Loading data for Shop ID: {ShopId}");
+            
+            // Load shop details
+            try
+            {
+                var shops = await ApiService.GetShopsAsync();
+                Console.WriteLine($"Loaded {shops?.Count ?? 0} shops");
+                if (shops != null)
+                {
+                    currentShop = shops.FirstOrDefault(s => s.Id == ShopId);
+                    Console.WriteLine($"Found shop: {currentShop?.Name ?? "null"}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading shops: {ex.Message}");
+                errorMessage += $"Error loading shop: {ex.Message}; ";
+            }
+            
+            // Load menu items
+            try
+            {
+                var menuItemsResult = await ApiService.GetShopMenuItemsAsync(ShopId);
+                Console.WriteLine($"Loaded {menuItemsResult?.Count() ?? 0} menu items");
+                if (menuItemsResult != null)
+                {
+                    menuItems = menuItemsResult.ToList();
+                }
+                else
+                {
+                    menuItems = new List<MenuItemDto>();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading menu items: {ex.Message}");
+                errorMessage += $"Error loading menu items: {ex.Message}; ";
+                menuItems = new List<MenuItemDto>();
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"เกิดข้อผิดพลาด: {ex.Message}";
+            Console.WriteLine($"General error: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task ShowCartModal()
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("eval", "new bootstrap.Modal(document.getElementById('cartModal')).show()");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error showing cart modal: {ex.Message}");
+        }
+    }
+
+    private async Task AddToCartDirectly(MenuItemDto menuItem)
+    {
+        try
+        {
+            var existingItem = cartItems.FirstOrDefault(x => x.MenuItem.Id == menuItem.Id);
+            if (existingItem != null)
+            {
+                existingItem.Quantity += 1;
+            }
+            else
+            {
+                cartItems.Add(new CartItem 
+                { 
+                    MenuItem = menuItem, 
+                    Quantity = 1 
+                });
+            }
+
+            await JS.InvokeVoidAsync("alert", $"เพิ่ม {menuItem.Name} ลงตะกร้าแล้ว");
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error adding to cart: {ex.Message}");
+            await JS.InvokeVoidAsync("alert", $"เกิดข้อผิดพลาด: {ex.Message}");
+        }
+    }
+
+    private void IncreaseCartQuantity(CartItem cartItem)
+    {
+        cartItem.Quantity++;
+        StateHasChanged();
+    }
+
+    private void DecreaseCartQuantity(CartItem cartItem)
+    {
+        if (cartItem.Quantity > 1)
+        {
+            cartItem.Quantity--;
+            StateHasChanged();
+        }
+    }
+
+    private void RemoveFromCart(CartItem cartItem)
+    {
+        cartItems.Remove(cartItem);
+        StateHasChanged();
+    }
+
+    private async Task SubmitOrder()
+    {
+        try
+        {
+            isSubmittingOrder = true;
+
+            if (!cartItems.Any())
+            {
+                await JS.InvokeVoidAsync("alert", "ตะกร้าว่าง กรุณาเลือกเมนูก่อน");
+                return;
+            }
+
+            // Create order items
+            var orderItems = cartItems.Select(item => new CreateOrderItemDto
+            {
+                MenuItemId = item.MenuItem.Id,
+                Quantity = item.Quantity,
+                Price = item.MenuItem.Price
+            }).ToList();
+
+            // Create order
+            var order = new CreateOrderDto
+            {
+                ServiceType = "takeaway",
+                OrderItems = orderItems
+            };
+
+            // Submit order
+            var response = await ApiService.CreateOrderAsync(order);
+            
+            if (response != null)
+            {
+                await JS.InvokeVoidAsync("alert", "สั่งอาหารสำเร็จ! กรุณารอสักครู่");
+                
+                // Clear cart
+                cartItems.Clear();
+                
+                // Hide modal
+                await JS.InvokeVoidAsync("eval", "bootstrap.Modal.getInstance(document.getElementById('cartModal')).hide()");
+                
+                // Navigate to orders page to show order status
+                NavigationManager.NavigateTo($"/orders");
+            }
+            else
+            {
+                await JS.InvokeVoidAsync("alert", "เกิดข้อผิดพลาดในการสั่งอาหาร");
+            }
+        }
+        catch (Exception ex)
+        {
+            await JS.InvokeVoidAsync("alert", $"เกิดข้อผิดพลาด: {ex.Message}");
+            Console.WriteLine($"Error submitting order: {ex.Message}");
+        }
+        finally
+        {
+            isSubmittingOrder = false;
+        }
+    }
+}

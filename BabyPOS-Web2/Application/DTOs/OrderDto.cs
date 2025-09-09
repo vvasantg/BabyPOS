@@ -16,6 +16,7 @@ namespace BabyPOS_Web2.Application.DTOs
 
     public class CreateOrderDto
     {
+        public int ShopId { get; set; }
         public int? TableId { get; set; }
         public string ServiceType { get; set; } = "dineIn";
         public List<CreateOrderItemDto> OrderItems { get; set; } = new List<CreateOrderItemDto>();

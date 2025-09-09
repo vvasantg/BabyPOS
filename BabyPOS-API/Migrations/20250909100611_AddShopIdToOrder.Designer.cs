@@ -3,6 +3,7 @@ using System;
 using BabyPOS_API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BabyPOS_API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250909100611_AddShopIdToOrder")]
+    partial class AddShopIdToOrder
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,63 +24,6 @@ namespace BabyPOS_API.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
-
-            modelBuilder.Entity("BabyPOS_API.Models.Bill", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("CustomerName")
-                        .HasColumnType("text");
-
-                    b.Property<string>("CustomerPhone")
-                        .HasColumnType("text");
-
-                    b.Property<string>("DeliveryAddress")
-                        .HasColumnType("text");
-
-                    b.Property<decimal?>("DeliveryFee")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal?>("DiscountAmount")
-                        .HasColumnType("numeric");
-
-                    b.Property<bool>("IsPaid")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Notes")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("PaidAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("ServiceType")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("ShopId")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("TableId")
-                        .HasColumnType("integer");
-
-                    b.Property<decimal>("TotalAmount")
-                        .HasColumnType("numeric");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ShopId");
-
-                    b.HasIndex("TableId");
-
-                    b.ToTable("Bills");
-                });
 
             modelBuilder.Entity("BabyPOS_API.Models.MenuItem", b =>
                 {
@@ -119,9 +65,6 @@ namespace BabyPOS_API.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("BillId")
-                        .HasColumnType("integer");
-
                     b.Property<DateTime?>("CheckedOutAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -146,8 +89,6 @@ namespace BabyPOS_API.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("BillId");
 
                     b.HasIndex("TableId");
 
@@ -255,23 +196,6 @@ namespace BabyPOS_API.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("BabyPOS_API.Models.Bill", b =>
-                {
-                    b.HasOne("BabyPOS_API.Models.Shop", "Shop")
-                        .WithMany()
-                        .HasForeignKey("ShopId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("BabyPOS_API.Models.Table", "Table")
-                        .WithMany()
-                        .HasForeignKey("TableId");
-
-                    b.Navigation("Shop");
-
-                    b.Navigation("Table");
-                });
-
             modelBuilder.Entity("BabyPOS_API.Models.MenuItem", b =>
                 {
                     b.HasOne("BabyPOS_API.Models.Shop", "Shop")
@@ -285,15 +209,9 @@ namespace BabyPOS_API.Migrations
 
             modelBuilder.Entity("BabyPOS_API.Models.Order", b =>
                 {
-                    b.HasOne("BabyPOS_API.Models.Bill", "Bill")
-                        .WithMany("Orders")
-                        .HasForeignKey("BillId");
-
                     b.HasOne("BabyPOS_API.Models.Table", "Table")
                         .WithMany()
                         .HasForeignKey("TableId");
-
-                    b.Navigation("Bill");
 
                     b.Navigation("Table");
                 });
@@ -337,11 +255,6 @@ namespace BabyPOS_API.Migrations
                         .IsRequired();
 
                     b.Navigation("Shop");
-                });
-
-            modelBuilder.Entity("BabyPOS_API.Models.Bill", b =>
-                {
-                    b.Navigation("Orders");
                 });
 
             modelBuilder.Entity("BabyPOS_API.Models.Order", b =>

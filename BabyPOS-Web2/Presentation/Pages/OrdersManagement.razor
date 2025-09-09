@@ -1,13 +1,12 @@
-@page "/shops"
+@page "/orders-management"
 @using BabyPOS_Web2.Application.DTOs
 @using BabyPOS_Web2.Presentation.Components
 @inject BabyPOS_Web2.Infrastructure.Services.IApiService ApiService
-
-<PageTitle>Shops</PageTitle>
+@inject NavigationManager NavigationManager
 
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>ร้านค้าทั้งหมด</h2>
+        <h2>จัดการออเดอร์</h2>
         <button class="btn btn-success" @onclick="RefreshShops">
             <i class="bi bi-arrow-clockwise"></i> รีเฟรช
         </button>
@@ -26,7 +25,7 @@
     {
         <div class="alert alert-info text-center">
             <h4>ไม่พบข้อมูลร้านค้า</h4>
-            <p>ยังไม่มีร้านค้าในระบบ</p>
+            <p>ยังไม่มีร้านค้าในระบบหรือคุณไม่มีสิทธิ์เข้าถึง</p>
         </div>
     }
     else
@@ -41,8 +40,8 @@
                 <div>
                     <small class="text-muted">Shop ID: @context.Id</small>
                 </div>
-                <a class="btn btn-primary btn-sm" href="@($"/shops-menu/{context.Id}")">
-                    ดูเมนู
+                <a class="btn btn-warning btn-sm" href="@($"/shop-orders/{context.Id}")">
+                    <i class="bi bi-list-check"></i> จัดการออเดอร์
                 </a>
             </div>
         </ShopCardCarousel>
@@ -73,20 +72,23 @@
         {
             isLoading = true;
             errorMessage = string.Empty;
-            shops = await ApiService.GetShopsAsync();
             
+            Console.WriteLine("📋 Loading shops for management...");
+            shops = await ApiService.GetShopsForManagementAsync();
+            Console.WriteLine($"📋 Loaded {shops.Count} shops");
+
             // Load menu items for each shop
-            shopMenuItems.Clear();
             foreach (var shop in shops)
             {
                 try
                 {
                     var menuItems = await ApiService.GetShopMenuItemsAsync(shop.Id);
                     shopMenuItems[shop.Id] = menuItems;
+                    Console.WriteLine($"🍽️ Loaded {menuItems.Count} menu items for shop {shop.Id}");
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Failed to load menu items for shop {shop.Id}: {ex.Message}");
+                    Console.WriteLine($"⚠️ Failed to load menu items for shop {shop.Id}: {ex.Message}");
                     shopMenuItems[shop.Id] = new List<MenuItemDto>();
                 }
             }
@@ -94,7 +96,7 @@
         catch (Exception ex)
         {
             errorMessage = $"เกิดข้อผิดพลาดในการโหลดข้อมูล: {ex.Message}";
-            shops = new();
+            Console.WriteLine($"❌ Error loading shops: {ex.Message}");
         }
         finally
         {
@@ -107,29 +109,14 @@
         await LoadShops();
     }
 
-    private IEnumerable<string> GetShopImages(ShopDto shop)
+    private List<string> GetShopImages(ShopDto shop)
     {
-        // Get real menu item images from API data
-        if (shopMenuItems.TryGetValue(shop.Id, out var menuItems) && menuItems.Any())
-        {
-            return menuItems
-                .Where(m => !string.IsNullOrEmpty(m.ImagePath))
-                .Select(m => m.ImagePath!)
-                .Take(3);
-        }
-        
-        // Fallback to default image
-        return new List<string> { "/img/food/default.png" };
+        // Return some default images for the carousel
+        return new List<string> { "/img/shop/placeholder.png" };
     }
 
-    private IEnumerable<MenuItemDto> GetShopMenuItems(ShopDto shop)
+    private List<MenuItemDto> GetShopMenuItems(ShopDto shop)
     {
-        // Return real menu items from API
-        if (shopMenuItems.TryGetValue(shop.Id, out var menuItems))
-        {
-            return menuItems.Take(3);
-        }
-        
-        return new List<MenuItemDto>();
+        return shopMenuItems.ContainsKey(shop.Id) ? shopMenuItems[shop.Id] : new List<MenuItemDto>();
     }
 }

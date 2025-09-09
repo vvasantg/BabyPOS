@@ -6,3 +6,9 @@ public class TableDto
     public string Name { get; set; } = string.Empty;
     public int ShopId { get; set; }
 }
+
+public class CreateTableDto
+{
+    public string Name { get; set; } = string.Empty;
+    public int ShopId { get; set; }
+}

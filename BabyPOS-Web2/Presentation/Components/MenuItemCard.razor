@@ -1,0 +1,56 @@
+@using BabyPOS_Web2.Application.DTOs
+@using BabyPOS_Web2.Domain.Models
+
+<div class="card flex-fill">
+    <div class="card-body">
+        @if (!string.IsNullOrEmpty(Item.ImagePath))
+        {
+            <img src="@Item.ImagePath" alt="@Item.Name" style="width:100%;max-width:120px;max-height:120px;object-fit:cover;display:block;margin:auto;" />
+        }
+        else
+        {
+            <img src="/img/food/default.png" alt="no image" style="width:100%;max-width:120px;max-height:120px;object-fit:cover;display:block;margin:auto;opacity:0.5;" />
+        }
+        <h5 class="card-title mt-2">@Item.Name</h5>
+        <div class="fw-bold text-success">฿@Item.Price</div>
+        <div class="text-muted small">@GetCategoryText(Item.Category)</div>
+        <div class="mt-3">
+            @if (Mode == "management")
+            {
+                <!-- Management Mode Buttons -->
+                <div class="btn-group w-100" role="group">
+                    <button class="btn btn-sm btn-outline-primary" @onclick="() => OnEdit.InvokeAsync(Item)">
+                        <i class="bi bi-pencil"></i> แก้ไข
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" @onclick="() => OnDelete.InvokeAsync(Item)">
+                        <i class="bi bi-trash"></i> ลบ
+                    </button>
+                </div>
+            }
+            else
+            {
+                <!-- Customer Mode Button -->
+                <button class="btn btn-sm btn-success w-100" @onclick="() => OnAddToCart.InvokeAsync(Item)">
+                    <i class="bi bi-plus-circle"></i> เพิ่มลงตะกร้า
+                </button>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public MenuItemDto Item { get; set; } = new();
+    [Parameter] public string Mode { get; set; } = "customer"; // "customer" or "management"
+    [Parameter] public EventCallback<MenuItemDto> OnAddToCart { get; set; }
+    [Parameter] public EventCallback<MenuItemDto> OnEdit { get; set; }
+    [Parameter] public EventCallback<MenuItemDto> OnDelete { get; set; }
+
+    private string GetCategoryText(FoodCategory category) => category switch
+    {
+        FoodCategory.MainDish => "อาหารจานหลัก",
+        FoodCategory.Dessert => "ของหวาน",
+        FoodCategory.Drink => "เครื่องดื่ม",
+        FoodCategory.Other => "อื่นๆ",
+        _ => "ไม่ระบุ"
+    };
+}
