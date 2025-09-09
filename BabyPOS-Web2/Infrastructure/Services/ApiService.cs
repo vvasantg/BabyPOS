@@ -124,6 +124,42 @@ namespace BabyPOS_Web2.Infrastructure.Services
             return await SendRequestAsync<MenuItemDto>($"api/menuitems/{id}", HttpMethod.Get);
         }
 
+        public async Task<MenuItemDto?> CreateMenuItemAsync(CreateMenuItemDto menuItem)
+        {
+            return await SendRequestAsync<MenuItemDto>("api/menuitems", HttpMethod.Post, menuItem, requiresAuth: true);
+        }
+
+        public async Task<MenuItemDto?> UpdateMenuItemAsync(int id, CreateMenuItemDto menuItem)
+        {
+            return await SendRequestAsync<MenuItemDto>($"api/menuitems/{id}", HttpMethod.Put, menuItem, requiresAuth: true);
+        }
+
+        public async Task<bool> DeleteMenuItemAsync(int id)
+        {
+            try
+            {
+                var request = new HttpRequestMessage(HttpMethod.Delete, $"api/menuitems/{id}");
+                
+                var token = await _jsRuntime.InvokeAsync<string>("localStorage.getItem", "jwt");
+                if (!string.IsNullOrEmpty(token))
+                {
+                    request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+                }
+
+                var response = await _httpClient.SendAsync(request);
+                
+                // 204 NoContent หมายถึงลบสำเร็จ
+                // 200 OK ก็ได้เหมือนกัน
+                return response.StatusCode == System.Net.HttpStatusCode.NoContent || 
+                       response.StatusCode == System.Net.HttpStatusCode.OK;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"💥 Exception deleting menu item {id}: {ex.Message}");
+                return false;
+            }
+        }
+
         public async Task<List<ShopDto>> GetShopsAsync()
         {
             var result = await SendRequestAsync<List<ShopDto>>("api/shops", HttpMethod.Get);

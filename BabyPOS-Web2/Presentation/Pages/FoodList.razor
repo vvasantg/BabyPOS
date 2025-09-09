@@ -78,7 +78,66 @@
             <strong>Error:</strong> @errorMessage
         </div>
     }
+
+    @if (!string.IsNullOrEmpty(successMessage))
+    {
+        <div class="alert alert-success mt-3">
+            <strong>Success:</strong> @successMessage
+        </div>
+    }
 </div>
+
+<!-- Food Modal for Add/Edit -->
+@if (showFoodModal)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">@(editFoodId == 0 ? "เพิ่มเมนูใหม่" : "แก้ไขเมนู")</h5>
+                    <button type="button" class="btn-close" @onclick="HideFoodModal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">ชื่อเมนู</label>
+                        <input type="text" class="form-control" @bind="newFoodName" placeholder="ชื่อเมนู" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">ราคา (บาท)</label>
+                        <input type="number" class="form-control" @bind="newFoodPrice" min="0" step="0.01" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">หมวดหมู่</label>
+                        <select class="form-select" @bind="newFoodCategory">
+                            <option value="@FoodCategory.MainDish">อาหาร</option>
+                            <option value="@FoodCategory.Dessert">ของหวาน</option>
+                            <option value="@FoodCategory.Drink">เครื่องดื่ม</option>
+                            <option value="@FoodCategory.Other">อื่นๆ</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">รูปภาพ</label>
+                        <input type="text" class="form-control" @bind="newFoodImagePath" placeholder="URL รูปภาพ" />
+                        @if (!string.IsNullOrEmpty(newFoodImagePath))
+                        {
+                            <img src="@newFoodImagePath" alt="Preview" class="mt-2" style="max-width: 150px; height: auto;" />
+                        }
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="HideFoodModal">ยกเลิก</button>
+                    <button type="button" class="btn btn-primary" @onclick="SaveFoodAsync" disabled="@isSaving">
+                        @if (isSaving)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                        }
+                        @(editFoodId == 0 ? "เพิ่ม" : "อัปเดต")
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
 
 @code {
     [Parameter] public int ShopId { get; set; }
@@ -101,7 +160,9 @@
     List<MenuItemDto> MenuItems = new();
     bool showFoodModal = false;
     bool isLoading = true;
+    bool isSaving = false;
     string errorMessage = string.Empty;
+    string successMessage = string.Empty;
     int editFoodId = 0;
     string newFoodName = string.Empty;
     decimal newFoodPrice = 0;
@@ -198,16 +259,111 @@
 
     async Task SaveFoodAsync()
     {
-        // TODO: Implement save functionality
-        await JS.InvokeVoidAsync("alert", "ฟีเจอร์นี้ยังไม่ได้ implement");
-        HideFoodModal();
+        try
+        {
+            isSaving = true;
+            errorMessage = string.Empty;
+            successMessage = string.Empty;
+
+            // Validation
+            if (string.IsNullOrWhiteSpace(newFoodName))
+            {
+                errorMessage = "กรุณากรอกชื่อเมนู";
+                return;
+            }
+
+            if (newFoodPrice < 0)
+            {
+                errorMessage = "ราคาต้องมากกว่าหรือเท่ากับ 0";
+                return;
+            }
+
+            var menuItemData = new CreateMenuItemDto
+            {
+                Name = newFoodName.Trim(),
+                Price = newFoodPrice,
+                ShopId = ShopId,
+                Category = newFoodCategory,
+                ImagePath = string.IsNullOrWhiteSpace(newFoodImagePath) ? "/img/food/default.png" : newFoodImagePath.Trim()
+            };
+
+            MenuItemDto? result;
+            if (editFoodId == 0)
+            {
+                // Create new menu item
+                result = await ApiService.CreateMenuItemAsync(menuItemData);
+                successMessage = "เพิ่มเมนูสำเร็จ!";
+            }
+            else
+            {
+                // Update existing menu item
+                result = await ApiService.UpdateMenuItemAsync(editFoodId, menuItemData);
+                successMessage = "อัปเดตเมนูสำเร็จ!";
+            }
+
+            if (result != null)
+            {
+                await LoadMenuItemsAsync();
+                HideFoodModal();
+                
+                // Clear success message after 3 seconds
+                _ = Task.Delay(3000).ContinueWith(_ => 
+                {
+                    InvokeAsync(() => 
+                    {
+                        successMessage = string.Empty;
+                        StateHasChanged();
+                    });
+                });
+            }
+            else
+            {
+                errorMessage = "เกิดข้อผิดพลาดในการบันทึกข้อมูล";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"เกิดข้อผิดพลาด: {ex.Message}";
+        }
+        finally
+        {
+            isSaving = false;
+        }
     }
 
     async Task DeleteFoodAsync(int id)
     {
         if (!await JS.InvokeAsync<bool>("confirm", "ยืนยันการลบเมนูนี้?")) return;
         
-        // TODO: Implement delete functionality
-        await JS.InvokeVoidAsync("alert", "ฟีเจอร์นี้ยังไม่ได้ implement");
+        try
+        {
+            errorMessage = string.Empty;
+            successMessage = string.Empty;
+
+            var success = await ApiService.DeleteMenuItemAsync(id);
+            if (success)
+            {
+                await LoadMenuItemsAsync();
+                successMessage = "ลบเมนูสำเร็จ!";
+                
+                // Clear success message after 3 seconds
+                _ = Task.Delay(3000).ContinueWith(_ => 
+                {
+                    InvokeAsync(() => 
+                    {
+                        successMessage = string.Empty;
+                        StateHasChanged();
+                    });
+                });
+            }
+            else
+            {
+                errorMessage = "ไม่สามารถลบเมนูได้";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"เกิดข้อผิดพลาดในการลบ: {ex.Message}";
+        }
     }
 }

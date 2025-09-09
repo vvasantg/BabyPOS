@@ -12,6 +12,9 @@ namespace BabyPOS_Web2.Infrastructure.Services
         
         Task<List<MenuItemDto>> GetMenuItemsAsync(int shopId);
         Task<MenuItemDto?> GetMenuItemAsync(int id);
+        Task<MenuItemDto?> CreateMenuItemAsync(CreateMenuItemDto menuItem);
+        Task<MenuItemDto?> UpdateMenuItemAsync(int id, CreateMenuItemDto menuItem);
+        Task<bool> DeleteMenuItemAsync(int id);
         
         Task<List<ShopDto>> GetShopsAsync();
         Task<ShopDto?> GetShopAsync(int id);
