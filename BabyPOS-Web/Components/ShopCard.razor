@@ -1,0 +1,24 @@
+@using BabyPOS_Web.Models
+
+<div class="card flex-fill">
+    <div class="card-body">
+        <h5 class="card-title">@Shop.Name</h5>
+        <div class="mb-2">รหัสร้าน: @Shop.Id</div>
+        @if (Shop.ImageUrls != null && Shop.ImageUrls.Count > 0 && !string.IsNullOrEmpty(Shop.ImageUrls[0]))
+        {
+            <img src="@Shop.ImageUrls[0]" alt="@Shop.Name" style="width:100%;max-width:120px;max-height:120px;object-fit:cover;display:block;margin:auto;" />
+        }
+        else
+        {
+            <img src="/img/shop/sample1.jpg" alt="no image" style="width:100%;max-width:120px;max-height:120px;object-fit:cover;display:block;margin:auto;opacity:0.5;" />
+        }
+        <div class="mt-2">
+            @ChildContent
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public ShopVM Shop { get; set; } = new();
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

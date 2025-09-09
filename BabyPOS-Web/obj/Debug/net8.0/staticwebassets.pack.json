@@ -1,0 +1,365 @@
+{
+  "Files": [
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\obj\\Debug\\net8.0\\scopedcss\\projectbundle\\BabyPOS-Web.bundle.scp.css",
+      "PackagePath": "staticwebassets\\BabyPOS-Web.bundle.scp.css"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\appsettings.json",
+      "PackagePath": "staticwebassets\\appsettings.json"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\css\\app.css",
+      "PackagePath": "staticwebassets\\css\\app.css"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\css\\bootstrap\\bootstrap.min.css",
+      "PackagePath": "staticwebassets\\css\\bootstrap\\bootstrap.min.css"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\css\\shoplist.css",
+      "PackagePath": "staticwebassets\\css\\shoplist.css"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\favicon.png",
+      "PackagePath": "staticwebassets\\favicon.png"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\fetchConfig.js",
+      "PackagePath": "staticwebassets\\fetchConfig.js"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\icon-192.png",
+      "PackagePath": "staticwebassets\\icon-192.png"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\img\\food\\1shop.png",
+      "PackagePath": "staticwebassets\\img\\food\\1shop.png"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\img\\food\\2shop.png",
+      "PackagePath": "staticwebassets\\img\\food\\2shop.png"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\img\\food\\3shop.png",
+      "PackagePath": "staticwebassets\\img\\food\\3shop.png"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\img\\food\\cartoon-thailand-cuisine-illustration-png_241875.jpg",
+      "PackagePath": "staticwebassets\\img\\food\\cartoon-thailand-cuisine-illustration-png_241875.jpg"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\img\\food\\cartoon-thailand-food-delicacy-png_241886.jpg",
+      "PackagePath": "staticwebassets\\img\\food\\cartoon-thailand-food-delicacy-png_241886.jpg"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\img\\food\\default.png",
+      "PackagePath": "staticwebassets\\img\\food\\default.png"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\img\\food\\download (1).jpg",
+      "PackagePath": "staticwebassets\\img\\food\\download (1).jpg"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\img\\food\\download (2).jpg",
+      "PackagePath": "staticwebassets\\img\\food\\download (2).jpg"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\img\\food\\download (3).jpg",
+      "PackagePath": "staticwebassets\\img\\food\\download (3).jpg"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\img\\food\\download (4).jpg",
+      "PackagePath": "staticwebassets\\img\\food\\download (4).jpg"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\img\\food\\download (5).jpg",
+      "PackagePath": "staticwebassets\\img\\food\\download (5).jpg"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\img\\food\\download (6).jpg",
+      "PackagePath": "staticwebassets\\img\\food\\download (6).jpg"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\img\\food\\download.jpg",
+      "PackagePath": "staticwebassets\\img\\food\\download.jpg"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\img\\food\\f6d60f06aa4ffb0daec9677321a35e71.jpg",
+      "PackagePath": "staticwebassets\\img\\food\\f6d60f06aa4ffb0daec9677321a35e71.jpg"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\img\\food\\images (1).jpg",
+      "PackagePath": "staticwebassets\\img\\food\\images (1).jpg"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\img\\food\\images (2).jpg",
+      "PackagePath": "staticwebassets\\img\\food\\images (2).jpg"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\img\\food\\images (3).jpg",
+      "PackagePath": "staticwebassets\\img\\food\\images (3).jpg"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\img\\food\\images (4).jpg",
+      "PackagePath": "staticwebassets\\img\\food\\images (4).jpg"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\img\\food\\images (5).jpg",
+      "PackagePath": "staticwebassets\\img\\food\\images (5).jpg"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\img\\food\\images (6).jpg",
+      "PackagePath": "staticwebassets\\img\\food\\images (6).jpg"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\img\\food\\images (7).jpg",
+      "PackagePath": "staticwebassets\\img\\food\\images (7).jpg"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\img\\food\\images (8).jpg",
+      "PackagePath": "staticwebassets\\img\\food\\images (8).jpg"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\img\\food\\images.jpg",
+      "PackagePath": "staticwebassets\\img\\food\\images.jpg"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\img\\food\\sample1.jpg",
+      "PackagePath": "staticwebassets\\img\\food\\sample1.jpg"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\img\\shop\\39dccde7-19e4-441a-9604-3933216f4a50.jpg",
+      "PackagePath": "staticwebassets\\img\\shop\\39dccde7-19e4-441a-9604-3933216f4a50.jpg"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\img\\shop\\3b28ab24-41c3-4de0-b9b7-141c733e052f.jpg",
+      "PackagePath": "staticwebassets\\img\\shop\\3b28ab24-41c3-4de0-b9b7-141c733e052f.jpg"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\img\\shop\\476f5166-3906-4113-9117-b867152de617.jpg",
+      "PackagePath": "staticwebassets\\img\\shop\\476f5166-3906-4113-9117-b867152de617.jpg"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\img\\shop\\85fcd613-5af1-499d-9628-a30bba38be06.jpg",
+      "PackagePath": "staticwebassets\\img\\shop\\85fcd613-5af1-499d-9628-a30bba38be06.jpg"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\img\\shop\\b6dd2ac9-6e64-4883-b680-bc480a1d2993.jpg",
+      "PackagePath": "staticwebassets\\img\\shop\\b6dd2ac9-6e64-4883-b680-bc480a1d2993.jpg"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\img\\shop\\c87f13a6-4376-43c9-96d9-b1859819be76.jpg",
+      "PackagePath": "staticwebassets\\img\\shop\\c87f13a6-4376-43c9-96d9-b1859819be76.jpg"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\img\\shop\\f53e38ac-fddf-4b47-9003-ac6bf490b40f.jpg",
+      "PackagePath": "staticwebassets\\img\\shop\\f53e38ac-fddf-4b47-9003-ac6bf490b40f.jpg"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\img\\shop\\placeholder.png",
+      "PackagePath": "staticwebassets\\img\\shop\\placeholder.png"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\index.html",
+      "PackagePath": "staticwebassets\\index.html"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.css"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.css.map"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.min.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.min.css"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.min.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.min.css.map"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.css"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.css.map"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.min.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.min.css"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.min.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.min.css.map"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.css"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.css.map"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.min.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.min.css"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.min.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.min.css.map"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.css"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.css.map"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.min.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.min.css"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.min.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.min.css.map"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.css"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.css.map"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.min.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.min.css"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.min.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.min.css.map"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.css"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.css.map"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.min.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.min.css"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.min.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.min.css.map"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.css"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.css.map"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.min.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.min.css"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.min.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.min.css.map"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.css"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.css.map"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.min.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.min.css"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.min.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.min.css.map"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.js",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.js"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.js.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.js.map"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.min.js",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.min.js"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.min.js.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.min.js.map"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.esm.js",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.esm.js"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.esm.js.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.esm.js.map"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.esm.min.js",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.esm.min.js"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.esm.min.js.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.esm.min.js.map"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.js",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.js"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.js.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.js.map"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.min.js",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.min.js"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.min.js.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.min.js.map"
+    },
+    {
+      "Id": "D:\\AI\\workspace\\BabyPOS\\BabyPOS-Web\\wwwroot\\sample-data\\weather.json",
+      "PackagePath": "staticwebassets\\sample-data\\weather.json"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.BabyPOS-Web.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.build.BabyPOS-Web.props",
+      "PackagePath": "build\\BabyPOS-Web.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildMultiTargeting.BabyPOS-Web.props",
+      "PackagePath": "buildMultiTargeting\\BabyPOS-Web.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildTransitive.BabyPOS-Web.props",
+      "PackagePath": "buildTransitive\\BabyPOS-Web.props"
+    }
+  ],
+  "ElementsToRemove": []
+}

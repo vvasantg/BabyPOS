@@ -1,0 +1,101 @@
+is_global = true
+build_property.TargetFramework = net8.0
+build_property.TargetPlatformMinVersion = 
+build_property.UsingMicrosoftNETSdkWeb = true
+build_property.ProjectTypeGuids = 
+build_property.InvariantGlobalization = 
+build_property.PlatformNeutralAssembly = 
+build_property.EnforceExtendedAnalyzerRules = 
+build_property._SupportedPlatformList = Linux,macOS,Windows
+build_property.RootNamespace = BabyPOS_Web2
+build_property.RootNamespace = BabyPOS_Web2
+build_property.ProjectDir = D:\AI\workspace\BabyPOS\BabyPOS-Web2\
+build_property.EnableComHosting = 
+build_property.EnableGeneratedComInterfaceComImportInterop = 
+build_property.RazorLangVersion = 8.0
+build_property.SupportLocalizedComponentNames = 
+build_property.GenerateRazorMetadataSourceChecksumAttributes = 
+build_property.MSBuildProjectDirectory = D:\AI\workspace\BabyPOS\BabyPOS-Web2
+build_property._RazorSourceGeneratorDebug = 
+build_property.EffectiveAnalysisLevelStyle = 8.0
+build_property.EnableCodeStyleSeverity = 
+
+[D:/AI/workspace/BabyPOS/BabyPOS-Web2/App.razor]
+build_metadata.AdditionalFiles.TargetPath = QXBwLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/AI/workspace/BabyPOS/BabyPOS-Web2/Pages/Counter.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ291bnRlci5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/AI/workspace/BabyPOS/BabyPOS-Web2/Pages/FetchData.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcRmV0Y2hEYXRhLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/AI/workspace/BabyPOS/BabyPOS-Web2/Pages/Index.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSW5kZXgucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/AI/workspace/BabyPOS/BabyPOS-Web2/Presentation/Components/OrderManagement.razor]
+build_metadata.AdditionalFiles.TargetPath = UHJlc2VudGF0aW9uXENvbXBvbmVudHNcT3JkZXJNYW5hZ2VtZW50LnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/AI/workspace/BabyPOS/BabyPOS-Web2/Presentation/Components/ShopCardCarousel.razor]
+build_metadata.AdditionalFiles.TargetPath = UHJlc2VudGF0aW9uXENvbXBvbmVudHNcU2hvcENhcmRDYXJvdXNlbC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/AI/workspace/BabyPOS/BabyPOS-Web2/Presentation/Components/UserMenu.razor]
+build_metadata.AdditionalFiles.TargetPath = UHJlc2VudGF0aW9uXENvbXBvbmVudHNcVXNlck1lbnUucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/AI/workspace/BabyPOS/BabyPOS-Web2/Presentation/Pages/FoodList.razor]
+build_metadata.AdditionalFiles.TargetPath = UHJlc2VudGF0aW9uXFBhZ2VzXEZvb2RMaXN0LnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/AI/workspace/BabyPOS/BabyPOS-Web2/Presentation/Pages/Login.razor]
+build_metadata.AdditionalFiles.TargetPath = UHJlc2VudGF0aW9uXFBhZ2VzXExvZ2luLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/AI/workspace/BabyPOS/BabyPOS-Web2/Presentation/Pages/Order.razor]
+build_metadata.AdditionalFiles.TargetPath = UHJlc2VudGF0aW9uXFBhZ2VzXE9yZGVyLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/AI/workspace/BabyPOS/BabyPOS-Web2/Presentation/Pages/OrderManagementPage.razor]
+build_metadata.AdditionalFiles.TargetPath = UHJlc2VudGF0aW9uXFBhZ2VzXE9yZGVyTWFuYWdlbWVudFBhZ2UucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/AI/workspace/BabyPOS/BabyPOS-Web2/Presentation/Pages/Orders.razor]
+build_metadata.AdditionalFiles.TargetPath = UHJlc2VudGF0aW9uXFBhZ2VzXE9yZGVycy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/AI/workspace/BabyPOS/BabyPOS-Web2/Presentation/Pages/Shops.razor]
+build_metadata.AdditionalFiles.TargetPath = UHJlc2VudGF0aW9uXFBhZ2VzXFNob3BzLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/AI/workspace/BabyPOS/BabyPOS-Web2/Presentation/Pages/_Imports.razor]
+build_metadata.AdditionalFiles.TargetPath = UHJlc2VudGF0aW9uXFBhZ2VzXF9JbXBvcnRzLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/AI/workspace/BabyPOS/BabyPOS-Web2/Shared/SurveyPrompt.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXFN1cnZleVByb21wdC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/AI/workspace/BabyPOS/BabyPOS-Web2/_Imports.razor]
+build_metadata.AdditionalFiles.TargetPath = X0ltcG9ydHMucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/AI/workspace/BabyPOS/BabyPOS-Web2/Shared/MainLayout.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXE1haW5MYXlvdXQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = b-31toup4328
+
+[D:/AI/workspace/BabyPOS/BabyPOS-Web2/Shared/NavMenu.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXE5hdk1lbnUucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = b-8d60xl2shg
+
+[D:/AI/workspace/BabyPOS/BabyPOS-Web2/Pages/Error.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcRXJyb3IuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/AI/workspace/BabyPOS/BabyPOS-Web2/Pages/_Host.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcX0hvc3QuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 

@@ -1,0 +1,213 @@
+@page "/food-list/{ShopId:int}"
+@using BabyPOS_Web2.Application.DTOs
+@using BabyPOS_Web2.Domain.Models
+@inject BabyPOS_Web2.Infrastructure.Services.IApiService ApiService
+@inject IJSRuntime JS
+@inject NavigationManager NavigationManager
+
+<PageTitle>Food List</PageTitle>
+
+<div class="container py-3">
+    <h2>@ShopDetail</h2>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <button class="btn btn-outline-secondary" @onclick="GoBack">&lt; Back</button>
+        <div class="d-flex gap-2">
+            <button class="btn btn-success" @onclick="ShowAddFoodModal">+ เพิ่มรายการอาหาร</button>
+        </div>
+    </div>
+
+    <!-- Category Tabs -->
+    <ul class="nav nav-tabs mb-3">
+        @foreach (var cat in CategoryTabs)
+        {
+            <li class="nav-item">
+                <button type="button" class="nav-link @(SelectedCategory == cat.Value ? "active" : "")" @onclick="() => SelectCategory(cat.Value)">@cat.Label</button>
+            </li>
+        }
+    </ul>
+
+    @if (isLoading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">กำลังโหลดเมนูอาหาร...</p>
+        </div>
+    }
+    else if (!FilteredMenuItems.Any())
+    {
+        <div class="text-center text-muted py-5">ไม่พบข้อมูลเมนูอาหาร</div>
+    }
+    else
+    {
+        <div class="row g-3">
+            @foreach (var chunk in FilteredMenuItems.Chunk(3))
+            {
+                @foreach (var item in chunk)
+                {
+                    <div class="col-12 col-md-4 d-flex">
+                        <div class="card flex-fill">
+                            <div class="card-body">
+                                @if (!string.IsNullOrEmpty(item.ImagePath))
+                                {
+                                    <img src="@item.ImagePath" alt="@item.Name" style="width:100%;max-width:120px;max-height:120px;object-fit:cover;display:block;margin:auto;" />
+                                }
+                                else
+                                {
+                                    <img src="/img/food/default.png" alt="no image" style="width:100%;max-width:120px;max-height:120px;object-fit:cover;display:block;margin:auto;opacity:0.5;" />
+                                }
+                                <h5 class="card-title mt-2">@item.Name</h5>
+                                <div class="fw-bold">฿@item.Price</div>
+                                <div class="text-muted">@GetCategoryText(item.Category)</div>
+                                <div class="mt-2">
+                                    <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => ShowEditFoodModal(item)">แก้ไข</button>
+                                    <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteFoodAsync(item.Id)">ลบ</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger mt-3">
+            <strong>Error:</strong> @errorMessage
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public int ShopId { get; set; }
+    
+    private record CategoryTab(string Label, FoodCategory? Value);
+    List<CategoryTab> CategoryTabs = new()
+    {
+        new("ทั้งหมด", null),
+        new("อาหาร", FoodCategory.MainDish),
+        new("ของหวาน", FoodCategory.Dessert),
+        new("เครื่องดื่ม", FoodCategory.Drink),
+        new("อื่นๆ", FoodCategory.Other)
+    };
+    
+    FoodCategory? SelectedCategory = null;
+    IEnumerable<MenuItemDto> FilteredMenuItems =>
+        SelectedCategory == null ? MenuItems : MenuItems.Where(m => m.Category == SelectedCategory);
+
+    string ShopDetail = "";
+    List<MenuItemDto> MenuItems = new();
+    bool showFoodModal = false;
+    bool isLoading = true;
+    string errorMessage = string.Empty;
+    int editFoodId = 0;
+    string newFoodName = string.Empty;
+    decimal newFoodPrice = 0;
+    FoodCategory newFoodCategory = FoodCategory.MainDish;
+    string newFoodImagePath = "/img/food/default.png";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadShopInfoAsync();
+        await LoadMenuItemsAsync();
+    }
+
+    void SelectCategory(FoodCategory? cat)
+    {
+        SelectedCategory = cat;
+    }
+
+    void GoBack() 
+    { 
+        NavigationManager.NavigateTo("/shops"); 
+    }
+
+    async Task LoadShopInfoAsync()
+    {
+        try
+        {
+            var shop = await ApiService.GetShopAsync(ShopId);
+            if (shop != null)
+            {
+                ShopDetail = shop.Name;
+            }
+        }
+        catch 
+        { 
+            ShopDetail = $"ร้านค้า ID: {ShopId}"; 
+        }
+    }
+
+    async Task LoadMenuItemsAsync()
+    {
+        try
+        {
+            isLoading = true;
+            errorMessage = string.Empty;
+            MenuItems = await ApiService.GetShopMenuItemsAsync(ShopId);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"เกิดข้อผิดพลาดในการโหลดเมนู: {ex.Message}";
+            MenuItems = new();
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    string GetCategoryText(FoodCategory category)
+    {
+        return category switch
+        {
+            FoodCategory.MainDish => "อาหาร",
+            FoodCategory.Dessert => "ของหวาน",
+            FoodCategory.Drink => "เครื่องดื่ม",
+            FoodCategory.Other => "อื่นๆ",
+            _ => "ไม่ระบุ"
+        };
+    }
+
+    void ShowAddFoodModal() 
+    {
+        editFoodId = 0;
+        newFoodName = string.Empty;
+        newFoodPrice = 0;
+        newFoodCategory = FoodCategory.MainDish;
+        newFoodImagePath = "/img/food/default.png";
+        showFoodModal = true;
+    }
+
+    void ShowEditFoodModal(MenuItemDto item) 
+    {
+        editFoodId = item.Id;
+        newFoodName = item.Name;
+        newFoodPrice = item.Price;
+        newFoodCategory = item.Category;
+        newFoodImagePath = item.ImagePath ?? "/img/food/default.png";
+        showFoodModal = true;
+    }
+
+    void HideFoodModal() 
+    { 
+        showFoodModal = false; 
+    }
+
+    async Task SaveFoodAsync()
+    {
+        // TODO: Implement save functionality
+        await JS.InvokeVoidAsync("alert", "ฟีเจอร์นี้ยังไม่ได้ implement");
+        HideFoodModal();
+    }
+
+    async Task DeleteFoodAsync(int id)
+    {
+        if (!await JS.InvokeAsync<bool>("confirm", "ยืนยันการลบเมนูนี้?")) return;
+        
+        // TODO: Implement delete functionality
+        await JS.InvokeVoidAsync("alert", "ฟีเจอร์นี้ยังไม่ได้ implement");
+    }
+}

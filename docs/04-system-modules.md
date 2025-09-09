@@ -1,0 +1,22 @@
+## System Modules
+- **Member System & Roles**
+  - `admin`: System super admin (backoffice)
+  - `adminShop`: Shop owner, can manage shop members (userShop)
+  - `userShop`: Shop staff, can perform general tasks (e.g., billing)
+  - `user`: General user, can register, review shops (future)
+- **Login System**
+  - Login/logout
+  - Role-based access control
+- **Shop Management**
+  - Users can create shops (multiple per user)
+  - Add menu items, set prices
+  - Order type: dine-in (with table), take-away, delivery (shop-managed)
+  - Table management: custom table names
+- **Order System**
+  - Customers can order via shop URL/QR
+  - Add items until bill is closed
+  - Bill closing by adminShop/userShop
+- **Reporting**
+  - Sales summary by shop, day, month, year
+  - Breakdown by table, take-away, delivery
+  - System admin can view all shop reports, filter by province/region

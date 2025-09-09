@@ -1,0 +1,79 @@
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+@if (isLoggedIn)
+{
+    <div class="dropdown" style="display:inline-block;float:right;margin:10px;">
+        <button class="btn btn-secondary dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+            @currentUsername
+        </button>
+        <ul class="dropdown-menu" aria-labelledby="userDropdown">
+            <li><a class="dropdown-item" href="/shop-management">shop management</a></li>
+            <li><hr class="dropdown-divider" /></li>
+            <li><a class="dropdown-item" href="#" @onclick="Logout">logout</a></li>
+        </ul>
+    </div>
+}
+else
+{
+    <a href="/login" class="btn btn-outline-primary">Login</a>
+}
+
+@code {
+    [Parameter] public EventCallback OnLogout { get; set; }
+    bool isLoggedIn = false;
+    string currentUsername = string.Empty;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await CheckLoginState();
+            StateHasChanged();
+        }
+    }
+
+    private async Task CheckLoginState()
+    {
+        try
+        {
+            var token = await JS.InvokeAsync<string>("localStorage.getItem", "jwt");
+            if (!string.IsNullOrEmpty(token))
+            {
+                isLoggedIn = true;
+                // decode username from token (simple way, not secure for prod)
+                var payload = token.Split('.')[1];
+                var json = System.Text.Encoding.UTF8.GetString(System.Convert.FromBase64String(PadBase64(payload)));
+                var username = System.Text.Json.JsonDocument.Parse(json).RootElement.GetProperty("unique_name").GetString();
+                currentUsername = username ?? "user";
+            }
+            else
+            {
+                isLoggedIn = false;
+                currentUsername = string.Empty;
+            }
+        }
+        catch
+        {
+            isLoggedIn = false;
+            currentUsername = string.Empty;
+        }
+    }
+
+    private string PadBase64(string base64)
+    {
+        int padding = 4 - (base64.Length % 4);
+        if (padding < 4) base64 += new string('=', padding);
+        return base64.Replace('-', '+').Replace('_', '/');
+    }
+
+    private async Task Logout()
+    {
+        await JS.InvokeVoidAsync("localStorage.removeItem", "jwt");
+        isLoggedIn = false;
+        currentUsername = string.Empty;
+        if (OnLogout.HasDelegate)
+            await OnLogout.InvokeAsync();
+        Navigation.NavigateTo("/");
+    }
+}

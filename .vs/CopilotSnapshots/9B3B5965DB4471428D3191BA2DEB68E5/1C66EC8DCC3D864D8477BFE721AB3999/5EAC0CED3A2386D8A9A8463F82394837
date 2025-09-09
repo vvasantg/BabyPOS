@@ -1,0 +1,75 @@
+﻿@page "/register"
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<h3>Register</h3>
+<div class="register-form">
+    <EditForm Model="registerModel" OnValidSubmit="HandleRegister">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <div>
+            <label>Username</label>
+            <InputText @bind-Value="registerModel.Username" class="form-control" />
+        </div>
+        <div>
+            <label>Email</label>
+            <InputText @bind-Value="registerModel.Email" class="form-control" />
+        </div>
+        <div>
+            <label>Password</label>
+            <InputText @bind-Value="registerModel.Password" type="password" class="form-control" />
+        </div>
+        <button type="submit" class="btn btn-primary">Register</button>
+    </EditForm>
+    <div style="margin-top:12px">
+        <NavLink href="/login">???????????? ???????????</NavLink>
+    </div>
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="text-danger">@errorMessage</div>
+    }
+</div>
+
+@code {
+    public class RegisterModel
+    {
+        public string Username { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+    }
+
+    RegisterModel registerModel = new();
+    string? errorMessage;
+    string? apiBaseUrl;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Load config from appsettings.json
+        var config = await Http.GetFromJsonAsync<AppConfig>("appsettings.json");
+        apiBaseUrl = config?.ApiBaseUrl;
+    }
+
+    private async Task HandleRegister()
+    {
+        errorMessage = null;
+        if (string.IsNullOrEmpty(apiBaseUrl))
+        {
+            errorMessage = "API endpoint not configured.";
+            return;
+        }
+        var response = await Http.PostAsJsonAsync($"{apiBaseUrl}/users/register", registerModel);
+        if (response.IsSuccessStatusCode)
+        {
+            Navigation.NavigateTo("/login");
+        }
+        else
+        {
+            errorMessage = "Register failed. Please try again.";
+        }
+    }
+
+    public class AppConfig
+    {
+        public string ApiBaseUrl { get; set; } = string.Empty;
+    }
+}

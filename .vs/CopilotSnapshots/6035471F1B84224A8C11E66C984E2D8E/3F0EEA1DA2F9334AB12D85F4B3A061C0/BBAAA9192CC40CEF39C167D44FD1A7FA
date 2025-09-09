@@ -1,0 +1,12 @@
+﻿@page "/"
+
+<PageTitle>Home</PageTitle>
+
+<!-- Add UserMenu to the top right -->
+<div style="display: flex; justify-content: flex-end; align-items: center; min-height: 48px;">
+    <UserMenu />
+</div>
+
+<h1>Welcome to BabyPOS</h1>
+
+<!-- Add your main home content here -->

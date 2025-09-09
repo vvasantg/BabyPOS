@@ -1,0 +1,529 @@
+@page "/order/{ShopId:int}"
+@layout MainLayout
+
+@using BabyPOS_Web.Models
+@using System.Linq
+
+@inject HttpClient Http
+@inject IJSRuntime JS
+@inject NavigationManager NavigationManager
+
+<PageTitle>Order</PageTitle>
+
+<div class="container py-3">
+    <h2>@ShopDetail</h2>
+    
+    <!-- Table Selection -->
+    <div class="mb-3">
+        <label class="form-label">เลือกโต๊ะ (ไม่บังคับ):</label>
+        <select class="form-select" @bind="selectedTableId" disabled="@isTableLocked">
+            <option value="0">-- ไม่ระบุโต๊ะ --</option>
+            @foreach (var table in tables)
+            {
+                <option value="@table.Id">@table.Name</option>
+            }
+        </select>
+        @if (isTableLocked)
+        {
+            <small class="text-muted">โต๊ะถูกล็อกแล้ว (จำลองการสแกน QR Code)</small>
+        }
+    </div>
+    <!-- Category Tabs with Cart Icon -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <ul class="nav nav-tabs flex-grow-1">
+            @foreach (var cat in CategoryTabs)
+            {
+                <li class="nav-item">
+                    <button type="button" class="nav-link @(SelectedCategory == cat.Value ? "active" : "")" @onclick="() => SelectCategory(cat.Value)">@cat.Label</button>
+                </li>
+            }
+        </ul>
+        
+        <!-- Cart Icon -->
+        <button class="btn btn-success btn-lg rounded-circle position-relative ms-3" @onclick="ShowOrderSummary" title="ตะกร้าสั่งอาหาร">
+            🛒
+            @if (CartItems.Any())
+            {
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                    @CartItems.Sum(c => c.Quantity)
+                </span>
+            }
+        </button>
+    </div>
+
+    @if (!FilteredMenuItems.Any())
+    {
+        <div class="text-center text-muted py-5">ไม่พบข้อมูล</div>
+    }
+    else
+    {
+        <div class="row g-3">
+            @foreach (var chunk in FilteredMenuItems.Chunk(3))
+            {
+                @foreach (var item in chunk)
+                {
+                    <div class="col-12 col-md-4 d-flex">
+                        <div class="card flex-fill">
+                            <div class="card-body">
+                                @if (!string.IsNullOrEmpty(item.ImagePath))
+                                {
+                                    <img src="@item.ImagePath" alt="@item.Name" style="width:100%;max-width:120px;max-height:120px;object-fit:cover;display:block;margin:auto;" />
+                                }
+                                else
+                                {
+                                    <img src="/img/shop/sample1.jpg" alt="no image" style="width:100%;max-width:120px;max-height:120px;object-fit:cover;display:block;margin:auto;opacity:0.5;" />
+                                }
+                                <h5 class="card-title mt-2">@item.Name</h5>
+                                <div class="fw-bold">฿@item.Price</div>
+                                <!-- ปุ่มสั่งอาหาร -->
+                                <div class="mt-2">
+                                    <button class="btn btn-sm btn-success w-100" @onclick="() => ShowQuantityModal(item)">สั่งเมนูนี้</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    }
+</div>
+
+<!-- Quantity Selection Modal -->
+@if (showQuantityModal && selectedMenuItem != null)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,0.3);">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">เลือกจำนวน</h5>
+                    <button type="button" class="btn-close" @onclick="HideQuantityModal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <img src="@selectedMenuItem.ImagePath" alt="@selectedMenuItem.Name" style="width:80px;height:80px;object-fit:cover;" class="mb-3" />
+                    <h6>@selectedMenuItem.Name</h6>
+                    <p class="text-success fw-bold">฿@selectedMenuItem.Price</p>
+                    
+                    <div class="d-flex justify-content-center align-items-center gap-3 my-3">
+                        <button class="btn btn-outline-secondary btn-lg" @onclick="DecreaseModalQuantity">-</button>
+                        <span class="fs-4 fw-bold mx-3">@modalQuantity</span>
+                        <button class="btn btn-outline-secondary btn-lg" @onclick="IncreaseModalQuantity">+</button>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="HideQuantityModal">ยกเลิก</button>
+                    <button class="btn btn-success" @onclick="AddToOrderFromModal" disabled="@(modalQuantity <= 0)">
+                        เพิ่มลงตะกร้า (@modalQuantity)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Order Summary Modal -->
+@if (showOrderModal)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background:rgba(0,0,0,0.3);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">สรุปออเดอร์ - @ShopDetail</h5>
+                    <button type="button" class="btn-close" @onclick="HideOrderModal"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Table Info -->
+                    <div class="mb-3 p-2 bg-light rounded">
+                        <strong>โต๊ะ: </strong>@GetSelectedTableName()
+                    </div>
+                    
+                    <!-- Service Type Selection -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">ประเภทการบริการ:</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="serviceType" id="dineIn" value="dineIn" checked="@(selectedServiceType == "dineIn")" @onchange="@(() => selectedServiceType = "dineIn")" />
+                            <label class="form-check-label" for="dineIn">ทานที่ร้าน</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="serviceType" id="takeaway" value="takeaway" checked="@(selectedServiceType == "takeaway")" @onchange="@(() => selectedServiceType = "takeaway")" />
+                            <label class="form-check-label" for="takeaway">กลับบ้าน (มารับเอง)</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="serviceType" id="delivery" value="delivery" checked="@(selectedServiceType == "delivery")" @onchange="@(() => selectedServiceType = "delivery")" />
+                            <label class="form-check-label" for="delivery">กลับบ้าน (บริการส่ง)</label>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <!-- Order Items -->
+                    @if (CartItems.Any())
+                    {
+                        @foreach (var cartItem in CartItems)
+                        {
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div>
+                                    <strong>@cartItem.Name</strong><br>
+                                    <small>฿@cartItem.Price x @cartItem.Quantity</small>
+                                </div>
+                                <div class="text-end">
+                                    <strong>฿@(cartItem.Price * cartItem.Quantity)</strong>
+                                    <button class="btn btn-sm btn-outline-danger ms-2" @onclick="() => RemoveFromCart(cartItem.MenuItemId)">ลบ</button>
+                                </div>
+                            </div>
+                        }
+                        <hr>
+                        <div class="d-flex justify-content-between">
+                            <strong>รวมทั้งหมด:</strong>
+                            <strong class="text-success">฿@CartItems.Sum(c => c.Price * c.Quantity)</strong>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted text-center">ไม่มีรายการในตะกร้า</p>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="HideOrderModal">ยกเลิก</button>
+                    @if (CartItems.Any())
+                    {
+                        <button class="btn btn-success" @onclick="SubmitOrder" disabled="@isSubmittingOrder">
+                            @if (isSubmittingOrder)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2"></span>
+                            }
+                            สั่งอาหาร
+                        </button>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private record CategoryTab(string Label, int? Value);
+    List<CategoryTab> CategoryTabs = new()
+    {
+        new("ทั้งหมด", null),
+        new("อาหาร", 0),
+        new("ของหวาน", 1),
+        new("เครื่องดื่ม", 2),
+        new("อื่นๆ", 3)
+    };
+    int? SelectedCategory = null;
+    IEnumerable<MenuItemVM> FilteredMenuItems =>
+        SelectedCategory == null ? MenuItems : MenuItems.Where(m => m.CategoryInt == SelectedCategory);
+
+    void SelectCategory(int? cat)
+    {
+        SelectedCategory = cat;
+    }
+
+    [Parameter] public int ShopId { get; set; }
+    string ShopDetail = "";
+    List<MenuItemVM> MenuItems = new();
+    List<CartItemVM> CartItems = new();
+    List<TableVM> tables = new();
+    int selectedTableId = 0;
+    bool isTableLocked = false;
+    bool showOrderModal = false;
+    bool showQuantityModal = false;
+    bool isSubmittingOrder = false;
+    MenuItemVM? selectedMenuItem = null;
+    int modalQuantity = 1;
+    string apiBaseUrl = "/api";
+    string selectedServiceType = "dineIn";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadApiBaseUrlAsync();
+        await LoadShopInfoAsync();
+        await LoadTablesAsync();
+        await LoadMenuItemsAsync();
+        
+        // Check if table is locked via query parameter (simulate QR scan)
+        var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+        var query = uri.Query;
+        if (query.Contains("tableId="))
+        {
+            var tableIdParam = query.Split("tableId=")[1].Split("&")[0];
+            if (int.TryParse(tableIdParam, out var tableId))
+            {
+                selectedTableId = tableId;
+                isTableLocked = true;
+            }
+        }
+    }
+
+    async Task LoadTablesAsync()
+    {
+        try
+        {
+            var resp = await Http.GetAsync($"{apiBaseUrl}/tables/shop/{ShopId}");
+            if (resp.IsSuccessStatusCode)
+            {
+                var result = await resp.Content.ReadFromJsonAsync<List<TableApiModel>>();
+                tables = (result ?? new()).Select(t => new TableVM
+                {
+                    Id = t.Id,
+                    Name = t.Name,
+                    ShopId = t.ShopId
+                }).ToList();
+            }
+        }
+        catch { tables = new(); }
+    }
+
+    async Task LoadShopInfoAsync()
+    {
+        try
+        {
+            var resp = await Http.GetAsync($"{apiBaseUrl}/shops/{ShopId}");
+            if (resp.IsSuccessStatusCode)
+            {
+                var shop = await resp.Content.ReadFromJsonAsync<ShopApiModel>();
+                if (shop != null)
+                {
+                    ShopDetail = shop.Name;
+                }
+            }
+        }
+        catch { ShopDetail = ""; }
+    }
+
+    public class ShopApiModel
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+    }
+
+    async Task LoadApiBaseUrlAsync()
+    {
+        try
+        {
+            var configJson = await JS.InvokeAsync<string>("fetchConfigJson");
+            if (!string.IsNullOrEmpty(configJson))
+            {
+                var doc = System.Text.Json.JsonDocument.Parse(configJson);
+                if (doc.RootElement.TryGetProperty("BabyApiBaseUrl", out var urlProp))
+                    apiBaseUrl = urlProp.GetString() ?? "/api";
+            }
+        }
+        catch { apiBaseUrl = "/api"; }
+    }
+
+    async Task LoadMenuItemsAsync()
+    {
+        try
+        {
+            var resp = await Http.GetAsync($"{apiBaseUrl}/menuitems/shop/{ShopId}");
+            if (resp.IsSuccessStatusCode)
+            {
+                var result = await resp.Content.ReadFromJsonAsync<List<MenuItemApiModel>>();
+                MenuItems = (result ?? new()).Select(m => new MenuItemVM {
+                    Id = m.Id,
+                    Name = m.Name,
+                    Price = m.Price,
+                    ShopId = m.ShopId,
+                    ImagePath = m.ImagePath ?? string.Empty,
+                    CategoryInt = m.Category,
+                    Category = m.Category switch {
+                        0 => "อาหาร",
+                        1 => "ของหวาน",
+                        2 => "เครื่องดื่ม",
+                        _ => "อื่นๆ"
+                    }
+                }).ToList();
+            }
+            else
+            {
+                MenuItems = new();
+            }
+        }
+        catch { MenuItems = new(); }
+        StateHasChanged();
+    }
+
+    void ShowQuantityModal(MenuItemVM item)
+    {
+        selectedMenuItem = item;
+        modalQuantity = 1;
+        showQuantityModal = true;
+    }
+
+    void HideQuantityModal()
+    {
+        showQuantityModal = false;
+        selectedMenuItem = null;
+        modalQuantity = 1;
+    }
+
+    void IncreaseModalQuantity()
+    {
+        modalQuantity++;
+        StateHasChanged();
+    }
+
+    void DecreaseModalQuantity()
+    {
+        if (modalQuantity > 1)
+        {
+            modalQuantity--;
+            StateHasChanged();
+        }
+    }
+
+    void AddToOrderFromModal()
+    {
+        if (selectedMenuItem == null || modalQuantity <= 0) return;
+
+        var existingItem = CartItems.FirstOrDefault(c => c.MenuItemId == selectedMenuItem.Id);
+        if (existingItem != null)
+        {
+            existingItem.Quantity += modalQuantity;
+        }
+        else
+        {
+            CartItems.Add(new CartItemVM
+            {
+                MenuItemId = selectedMenuItem.Id,
+                Name = selectedMenuItem.Name,
+                Price = selectedMenuItem.Price,
+                Quantity = modalQuantity
+            });
+        }
+        
+        HideQuantityModal();
+        StateHasChanged();
+    }
+
+    void AddToOrder(MenuItemVM item)
+    {
+        ShowQuantityModal(item);
+    }
+
+    int GetItemQuantity(int itemId)
+    {
+        return 0; // No longer needed
+    }
+
+    void IncreaseQuantity(int itemId)
+    {
+        // No longer needed
+    }
+
+    void DecreaseQuantity(int itemId)
+    {
+        // No longer needed
+    }
+
+    void ShowOrderSummary()
+    {
+        showOrderModal = true;
+    }
+
+    void HideOrderModal()
+    {
+        showOrderModal = false;
+    }
+
+    string GetSelectedTableName()
+    {
+        if (selectedTableId == 0)
+            return "-";
+        
+        var table = tables.FirstOrDefault(t => t.Id == selectedTableId);
+        return table?.Name ?? "-";
+    }
+
+    void RemoveFromCart(int menuItemId)
+    {
+        CartItems.RemoveAll(c => c.MenuItemId == menuItemId);
+        StateHasChanged();
+    }
+
+    async Task SubmitOrder()
+    {
+        if (!CartItems.Any()) return;
+        
+        isSubmittingOrder = true;
+        try
+        {
+            var orderData = new
+            {
+                ShopId = ShopId,
+                TableId = selectedTableId,
+                ServiceType = selectedServiceType,
+                Items = CartItems.Select(c => new
+                {
+                    MenuItemId = c.MenuItemId,
+                    Quantity = c.Quantity
+                }).ToArray()
+            };
+
+            var response = await Http.PostAsJsonAsync($"{apiBaseUrl}/orders", orderData);
+            if (response.IsSuccessStatusCode)
+            {
+                await JS.InvokeVoidAsync("alert", "สั่งอาหารสำเร็จ!");
+                CartItems.Clear();
+                HideOrderModal();
+            }
+            else
+            {
+                await JS.InvokeVoidAsync("alert", "เกิดข้อผิดพลาดในการสั่งอาหาร");
+            }
+        }
+        catch
+        {
+            await JS.InvokeVoidAsync("alert", "เกิดข้อผิดพลาดในการสั่งอาหาร");
+        }
+        finally
+        {
+            isSubmittingOrder = false;
+            StateHasChanged();
+        }
+    }
+
+    public class MenuItemApiModel
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public decimal Price { get; set; }
+        public int ShopId { get; set; }
+        public string? ImagePath { get; set; }
+        public int Category { get; set; }
+    }
+
+    public class MenuItemVM
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public decimal Price { get; set; }
+        public int ShopId { get; set; }
+        public string ImagePath { get; set; } = string.Empty;
+        public int CategoryInt { get; set; }
+        public string Category { get; set; } = string.Empty;
+    }
+
+    public class CartItemVM
+    {
+        public int MenuItemId { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public decimal Price { get; set; }
+        public int Quantity { get; set; }
+    }
+
+    public class TableVM
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public int ShopId { get; set; }
+    }
+
+    public class TableApiModel
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public int ShopId { get; set; }
+    }
+}

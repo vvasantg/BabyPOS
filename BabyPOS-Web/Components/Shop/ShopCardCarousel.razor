@@ -1,0 +1,75 @@
+@* ShopCardCarousel: Card grid สำหรับร้านค้า แต่ละ card มี Bootstrap carousel ย่อยสำหรับรูปอาหาร *@
+@using BabyPOS_Web.Models
+@typeparam TShop
+<div class="carousel-container">
+    <div class="row g-3">
+        @foreach (var shop in Shops)
+        {
+            var carouselId = $"carousel-shop-{GetShopName(shop).Replace(" ", "-")}";
+            <div class="col-12 col-md-4 d-flex" style="margin-bottom: 16px;">
+                <div class="card flex-fill">
+                    <div id="@carouselId" class="carousel slide" data-bs-ride="carousel">
+                        <div class="carousel-inner">
+                            @if (GetShopImages(shop) != null && GetShopImages(shop).Any())
+                            {
+                                var images = GetShopImages(shop).ToList();
+                                List<string>? foodNames = null;
+                                if (shop is BabyPOS_Web.Models.ShopVM svm && svm.Foods != null && svm.Foods.Count > 0)
+                                    foodNames = svm.Foods.Take(images.Count).Select(f => f.Name).ToList();
+                                for (int i = 0; i < images.Count; i++)
+                                {
+                                    <div class="carousel-item @(i == 0 ? "active" : null)">
+                                        <img src="@images[i]" class="d-block w-100" style="object-fit:cover; height:200px;" alt="Shop Image">
+                                        <div class="carousel-caption d-none d-md-block">
+                                            <h5>@GetShopName(shop)</h5>
+                                            @if (foodNames != null && i < foodNames.Count)
+                                            {
+                                                <p>@foodNames[i]</p>
+                                            }
+                                            else
+                                            {
+                                                <p>@GetShopDescription(shop)</p>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <div class="carousel-item active">
+                                    <img src="/img/food/default.png" class="d-block w-100" style="object-fit:cover; height:200px;" alt="no food" />
+                                    <div class="carousel-caption d-none d-md-block">
+                                        <h5>@GetShopName(shop)</h5>
+                                        <p class="text-muted">ไม่มีรายการอาหาร</p>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                        @if (GetShopImages(shop) != null && GetShopImages(shop).Any())
+                        {
+                            <button class="carousel-control-prev" type="button" data-bs-target="#@carouselId" data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Previous</span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#@carouselId" data-bs-slide="next">
+                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Next</span>
+                            </button>
+                        }
+                    </div>
+                    <div class="card-body">
+                        @ChildContent(shop)
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public List<TShop> Shops { get; set; } = new();
+    [Parameter] public RenderFragment<TShop> ChildContent { get; set; } = default!;
+    [Parameter] public Func<TShop, string> GetShopName { get; set; } = default!;
+    [Parameter] public Func<TShop, string> GetShopDescription { get; set; } = shop => string.Empty;
+    [Parameter] public Func<TShop, IEnumerable<string>> GetShopImages { get; set; } = shop => Enumerable.Empty<string>();
+}

@@ -1,0 +1,12 @@
+## Solution Structure
+- **BabyPOS-Web**: Blazor Web UI (latest version)
+  - Connects to BabyPOS-API via RESTful API only
+  - No direct service calls
+- **BabyPOS-API**: .NET Core API (latest version)
+  - RESTful API
+  - Swagger UI enabled
+- **Database**: PostgreSQL
+  - Host: localhost:5432
+  - Username: moviehit_user
+  - Password: MovieHit@2024
+  - Database: BabyPOS

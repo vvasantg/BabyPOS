@@ -1,0 +1,9 @@
+.carousel-container {
+    width: 100%;
+}
+@media (max-width: 768px) {
+    .carousel-container .col-md-4 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+}

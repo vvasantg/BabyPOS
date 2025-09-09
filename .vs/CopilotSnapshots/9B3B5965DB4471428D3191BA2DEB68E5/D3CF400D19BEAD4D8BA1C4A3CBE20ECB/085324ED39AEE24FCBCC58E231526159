@@ -1,0 +1,62 @@
+﻿@page "/"
+@inject HttpClient Http
+@using Microsoft.AspNetCore.Components
+
+<link href="css/shoplist.css" rel="stylesheet" />
+
+<div class="shop-list-container">
+    <header>
+        <NavLink href="/login" class="login-btn">Login</NavLink>
+    </header>
+    <div class="shop-list">
+        @if (shops == null)
+        {
+            <div>Loading...</div>
+        }
+        else if (shops.Count == 0)
+        {
+            <div>No shops found.</div>
+        }
+        else
+        {
+            @foreach (var shop in shops)
+            {
+                <div class="shop-card">
+                    <img src="@shop.ImageUrl" alt="@shop.Name" class="shop-image" />
+                    <div class="shop-name">@shop.Name</div>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+@code {
+    public class Shop
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string ImageUrl { get; set; } = "https://via.placeholder.com/300x160?text=Shop";
+    }
+
+    List<Shop>? shops;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var response = await Http.GetAsync("/api/shops");
+            if (response.IsSuccessStatusCode)
+            {
+                shops = await response.Content.ReadFromJsonAsync<List<Shop>>();
+            }
+            else
+            {
+                shops = new List<Shop>();
+            }
+        }
+        catch
+        {
+            shops = new List<Shop>();
+        }
+    }
+}

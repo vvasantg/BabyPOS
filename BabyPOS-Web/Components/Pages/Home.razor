@@ -1,0 +1,38 @@
+@page "/"
+@page "/home"
+
+<PageTitle>Home</PageTitle>
+
+<h1>Welcome to BabyPOS</h1>
+
+<p>Point of Sale System for Restaurant</p>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Shop List</h5>
+                <p class="card-text">Manage shops and view menu</p>
+                <NavLink href="/shop-list" class="btn btn-primary">Go to Shops</NavLink>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Orders</h5>
+                <p class="card-text">Manage orders and billing</p>
+                <NavLink href="/orders" class="btn btn-primary">View Orders</NavLink>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Login</h5>
+                <p class="card-text">User authentication</p>
+                <NavLink href="/login" class="btn btn-primary">Login</NavLink>
+            </div>
+        </div>
+    </div>
+</div>

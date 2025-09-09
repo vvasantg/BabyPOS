@@ -1,0 +1,135 @@
+@page "/shops"
+@using BabyPOS_Web2.Application.DTOs
+@using BabyPOS_Web2.Presentation.Components
+@inject BabyPOS_Web2.Infrastructure.Services.IApiService ApiService
+
+<PageTitle>Shops</PageTitle>
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>ร้านค้าทั้งหมด</h2>
+        <button class="btn btn-success" @onclick="RefreshShops">
+            <i class="bi bi-arrow-clockwise"></i> รีเฟรช
+        </button>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">กำลังโหลดข้อมูลร้านค้า...</p>
+        </div>
+    }
+    else if (shops.Count == 0)
+    {
+        <div class="alert alert-info text-center">
+            <h4>ไม่พบข้อมูลร้านค้า</h4>
+            <p>ยังไม่มีร้านค้าในระบบ</p>
+        </div>
+    }
+    else
+    {
+        <ShopCardCarousel TShop="ShopDto" 
+                         Shops="shops" 
+                         GetShopName="shop => shop.Name" 
+                         GetShopDescription="shop => shop.Description" 
+                         GetShopImages="GetShopImages"
+                         GetShopMenuItems="GetShopMenuItems">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <small class="text-muted">Shop ID: @context.Id</small>
+                </div>
+                <a class="btn btn-primary btn-sm" href="@($"/food-list/{context.Id}")">
+                    ดูเมนู
+                </a>
+            </div>
+        </ShopCardCarousel>
+    }
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger mt-3">
+            <strong>Error:</strong> @errorMessage
+        </div>
+    }
+</div>
+
+@code {
+    private List<ShopDto> shops = new();
+    private bool isLoading = true;
+    private string errorMessage = string.Empty;
+    private Dictionary<int, List<MenuItemDto>> shopMenuItems = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadShops();
+    }
+
+    private async Task LoadShops()
+    {
+        try
+        {
+            isLoading = true;
+            errorMessage = string.Empty;
+            shops = await ApiService.GetShopsAsync();
+            
+            // Load menu items for each shop
+            shopMenuItems.Clear();
+            foreach (var shop in shops)
+            {
+                try
+                {
+                    var menuItems = await ApiService.GetShopMenuItemsAsync(shop.Id);
+                    shopMenuItems[shop.Id] = menuItems;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Failed to load menu items for shop {shop.Id}: {ex.Message}");
+                    shopMenuItems[shop.Id] = new List<MenuItemDto>();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"เกิดข้อผิดพลาดในการโหลดข้อมูล: {ex.Message}";
+            shops = new();
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task RefreshShops()
+    {
+        await LoadShops();
+    }
+
+    private IEnumerable<string> GetShopImages(ShopDto shop)
+    {
+        // Get real menu item images from API data
+        if (shopMenuItems.TryGetValue(shop.Id, out var menuItems) && menuItems.Any())
+        {
+            return menuItems
+                .Where(m => !string.IsNullOrEmpty(m.ImagePath))
+                .Select(m => m.ImagePath!)
+                .Take(3);
+        }
+        
+        // Fallback to default image
+        return new List<string> { "/img/food/default.png" };
+    }
+
+    private IEnumerable<MenuItemDto> GetShopMenuItems(ShopDto shop)
+    {
+        // Return real menu items from API
+        if (shopMenuItems.TryGetValue(shop.Id, out var menuItems))
+        {
+            return menuItems.Take(3);
+        }
+        
+        return new List<MenuItemDto>();
+    }
+}

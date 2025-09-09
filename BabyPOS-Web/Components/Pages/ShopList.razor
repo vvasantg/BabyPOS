@@ -1,0 +1,61 @@
+@page "/shop-list"
+
+<PageTitle>Shop List</PageTitle>
+
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <h1>Shop List</h1>
+            <p>Select a shop to continue</p>
+        </div>
+    </div>
+    
+    <div class="row">
+        @if (shops.Count == 0)
+        {
+            <div class="col-12">
+                <div class="alert alert-info">
+                    <h4>No shops available</h4>
+                    <p>Please contact administrator to add shops</p>
+                </div>
+            </div>
+        }
+        else
+        {
+            @foreach (var shop in shops)
+            {
+                <div class="col-md-4 mb-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">@shop.Name</h5>
+                            <p class="card-text">@shop.Description</p>
+                            <NavLink href=@($"/food-list/{shop.Id}") class="btn btn-primary">View Menu</NavLink>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+@code {
+    private List<Shop> shops = new List<Shop>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Load shops from API or mock data
+        shops = new List<Shop>
+        {
+            new Shop { Id = 1, Name = "Main Restaurant", Description = "Main dining area with full menu" },
+            new Shop { Id = 2, Name = "Quick Service", Description = "Fast food and takeaway counter" },
+            new Shop { Id = 3, Name = "Coffee Corner", Description = "Coffee and light snacks" }
+        };
+    }
+
+    public class Shop
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+    }
+}

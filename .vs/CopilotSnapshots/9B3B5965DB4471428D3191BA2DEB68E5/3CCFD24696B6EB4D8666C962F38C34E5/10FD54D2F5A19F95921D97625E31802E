@@ -1,0 +1,54 @@
+﻿# BabyPOS
+
+BabyPOS เป็นระบบ POS (Point of Sale) ที่ออกแบบโดยใช้ Clean Architecture แยกส่วน UI, API, Database อย่างชัดเจน
+
+---
+
+## แนวทางการพัฒนา (Blazor Component First)
+
+- โปรเจคนี้ใช้ **Blazor Component** เป็นหลักสำหรับ UI ทุกส่วน
+- ทุกฟีเจอร์ใหม่ควรสร้างเป็น Blazor Component (เช่น UserMenu, ShopCard, NavBar ฯลฯ)
+- หากนำตัวอย่างโค้ดจากภายนอกที่ไม่ใช่ Blazor Component (เช่น HTML/JS/jQuery หรือ Bootstrap JS)
+  **ควร refactor เป็น Blazor Component ก่อนนำมาใช้จริง**
+
+## ตัวอย่าง Component ที่ใช้ในโปรเจค
+
+- `<UserMenu />` สำหรับเมนู user/login/logout
+- `<NavMenu />` สำหรับ navigation หลัก
+- `<ShopCard />` สำหรับแสดงข้อมูลร้านค้าแต่ละร้าน
+
+## ข้อควรระวัง
+
+- หลีกเลี่ยงการใช้ JavaScript/HTML ตรง ๆ หากสามารถใช้ Blazor Component ได้
+- หากจำเป็นต้องใช้ JS/HTML ให้แยกเป็น component และใช้ JS interop เท่านั้น
+
+---
+
+> **หมายเหตุ:**  
+> หากพบตัวอย่างหรือโค้ดที่ไม่ใช่ Blazor Component ให้ refactor หรือสอบถามทีมก่อนนำไปใช้
+
+---
+
+## โครงสร้าง Solution
+
+- **BabyPOS-Web**: Blazor WebAssembly (UI)
+- **BabyPOS-API**: ASP.NET Core Web API (Backend)
+- **BabyPOS-API.Tests**: Unit Test สำหรับ API
+- **BabyPOS-Web.Tests**: Unit Test สำหรับ Web
+- **/docs**: เอกสารประกอบและรายละเอียดฟีเจอร์
+
+---
+
+- [1. Overview](docs/01-overview.md)
+- [2. Solution Structure](docs/02-solution-structure.md)
+- [3. Features](docs/03-features.md)
+- [4. System Modules](docs/04-system-modules.md)
+- [5. Order Flow & UI Design](docs/05-order-flow-ui.md)
+- [6. Shop Management](docs/06-shop-management.md)
+- [7. Reporting & Dashboard](docs/07-reporting-dashboard.md)
+- [8. Main Screen](docs/08-main-screen.md)
+- [9. Roadmap](docs/09-roadmap.md)
+- [10. Implementation Notes](docs/10-implementation-notes.md)
+- [11. Future Enhancements](docs/11-future-enhancements.md)
+- [12. Contact & Contribution](docs/12-contact.md)
+- [13. License](docs/13-license.md)

@@ -1,0 +1,17 @@
+﻿# BabyPOS
+
+???? POS ?????????????????????????? ??? UI, API, Database ??? Clean Architecture
+
+- [1. Overview](docs/01-overview.md)
+- [2. Solution Structure](docs/02-solution-structure.md)
+- [3. Features](docs/03-features.md)
+- [4. System Modules](docs/04-system-modules.md)
+- [5. Order Flow & UI Design](docs/05-order-flow-ui.md)
+- [6. Shop Management](docs/06-shop-management.md)
+- [7. Reporting & Dashboard](docs/07-reporting-dashboard.md)
+- [8. Main Screen](docs/08-main-screen.md)
+- [9. Roadmap](docs/09-roadmap.md)
+- [10. Implementation Notes](docs/10-implementation-notes.md)
+- [11. Future Enhancements](docs/11-future-enhancements.md)
+- [12. Contact & Contribution](docs/12-contact.md)
+- [13. License](docs/13-license.md)

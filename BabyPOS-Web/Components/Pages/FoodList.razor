@@ -1,0 +1,88 @@
+@page "/food-list/{shopId:int}"
+
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <h1>Menu - @shopName</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><NavLink href="/">Home</NavLink></li>
+                    <li class="breadcrumb-item"><NavLink href="/shop-list">Shops</NavLink></li>
+                    <li class="breadcrumb-item active">Menu</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <div class="row">
+        @if (menuItems.Count == 0)
+        {
+            <div class="col-12">
+                <div class="alert alert-info">
+                    <h4>No menu items available</h4>
+                    <p>This shop doesn't have any menu items yet.</p>
+                </div>
+            </div>
+        }
+        else
+        {
+            @foreach (var item in menuItems)
+            {
+                <div class="col-md-4 mb-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">@item.Name</h5>
+                            <p class="card-text">@item.Description</p>
+                            <p class="card-text"><strong>$@item.Price.ToString("F2")</strong></p>
+                            <button class="btn btn-success" @onclick="() => AddToOrder(item)">Add to Order</button>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public int ShopId { get; set; }
+    [Inject] public NavigationManager Navigation { get; set; } = default!;
+    
+    private string shopName = string.Empty;
+    private List<MenuItem> menuItems = new List<MenuItem>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Mock data based on shop ID
+        shopName = ShopId switch
+        {
+            1 => "Main Restaurant",
+            2 => "Quick Service", 
+            3 => "Coffee Corner",
+            _ => "Unknown Shop"
+        };
+
+        // Mock menu items
+        menuItems = new List<MenuItem>
+        {
+            new MenuItem { Id = 1, Name = "Thai Fried Rice", Description = "Spicy fried rice with vegetables", Price = 8.99m },
+            new MenuItem { Id = 2, Name = "Pad Thai", Description = "Traditional Thai noodles", Price = 9.99m },
+            new MenuItem { Id = 3, Name = "Tom Yum Soup", Description = "Hot and sour soup", Price = 7.99m },
+            new MenuItem { Id = 4, Name = "Green Curry", Description = "Spicy green curry with chicken", Price = 12.99m }
+        };
+    }
+
+    private void AddToOrder(MenuItem item)
+    {
+        // TODO: Add to order functionality
+        // For now just show a simple alert-like behavior
+        Navigation.NavigateTo($"/order?item={item.Id}");
+    }
+
+    public class MenuItem
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public decimal Price { get; set; }
+    }
+}

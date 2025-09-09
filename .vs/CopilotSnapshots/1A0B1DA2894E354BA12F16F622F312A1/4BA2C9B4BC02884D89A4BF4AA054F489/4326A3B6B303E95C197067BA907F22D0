@@ -1,0 +1,8 @@
+﻿@page "/home"
+@layout MainLayout
+
+<PageTitle>หน้าหลัก</PageTitle>
+
+<h1>สวัสดี!</h1>
+
+ยินดีต้อนรับสู่แอปพลิเคชัน BabyPOS

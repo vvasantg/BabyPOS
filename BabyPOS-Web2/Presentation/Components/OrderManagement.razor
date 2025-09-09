@@ -1,0 +1,221 @@
+@using BabyPOS_Web2.Application.DTOs
+@using BabyPOS_Web2.Presentation.ViewModels
+@inject OrderManagementViewModel ViewModel
+@inject IJSRuntime JSRuntime
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Order Management</h2>
+        <button class="btn btn-primary" @onclick="RefreshOrders">
+            <i class="fas fa-sync-alt"></i> Refresh
+        </button>
+    </div>
+
+    @if (ViewModel.IsLoading)
+    {
+        <div class="text-center">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- Tabs Navigation -->
+        <ul class="nav nav-tabs mb-3">
+            <li class="nav-item">
+                <button class="nav-link @(ViewModel.ActiveTab == "pending" ? "active" : "")"
+                        @onclick='() => SwitchTab("pending")'>
+                    Pending Orders
+                    @if (ViewModel.PendingOrders.Any())
+                    {
+                        <span class="badge bg-warning text-dark ms-1">@ViewModel.PendingOrders.Count</span>
+                    }
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link @(ViewModel.ActiveTab == "ready" ? "active" : "")"
+                        @onclick='() => SwitchTab("ready")'>
+                    Ready Orders
+                    @if (ViewModel.ReadyOrders.Any())
+                    {
+                        <span class="badge bg-success ms-1">@ViewModel.ReadyOrders.Count</span>
+                    }
+                </button>
+            </li>
+        </ul>
+
+        <!-- Pending Orders Tab -->
+        @if (ViewModel.ActiveTab == "pending")
+        {
+            <div class="tab-pane active">
+                @if (!ViewModel.PendingOrders.Any())
+                {
+                    <div class="alert alert-info text-center">
+                        <i class="fas fa-info-circle"></i>
+                        No pending orders
+                    </div>
+                }
+                else
+                {
+                    <div class="row">
+                        @foreach (var order in ViewModel.PendingOrders)
+                        {
+                            <div class="col-md-6 col-lg-4 mb-3">
+                                <div class="card border-warning">
+                                    <div class="card-header bg-warning text-dark">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <strong>Order #@order.Id</strong>
+                                            <span class="badge bg-dark">@order.Status</span>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-2">
+                                            <small class="text-muted">
+                                                @order.CreatedAt.ToString("HH:mm") • 
+                                                @order.ServiceType
+                                                @if (!string.IsNullOrEmpty(order.TableName))
+                                                {
+                                                    <span> • Table: @order.TableName</span>
+                                                }
+                                            </small>
+                                        </div>
+                                        
+                                        <div class="order-items mb-3">
+                                            @foreach (var item in order.OrderItems)
+                                            {
+                                                <div class="d-flex justify-content-between">
+                                                    <span>@item.Quantity x @item.MenuItemName</span>
+                                                    <span>฿@((item.Price * item.Quantity).ToString("F2"))</span>
+                                                </div>
+                                            }
+                                        </div>
+                                        
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <strong>Total: ฿@order.TotalAmount.ToString("F2")</strong>
+                                            <button class="btn btn-success btn-sm" 
+                                                    @onclick="() => MarkAsReady(order.Id)">
+                                                Mark Ready
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        }
+
+        <!-- Ready Orders Tab -->
+        @if (ViewModel.ActiveTab == "ready")
+        {
+            <div class="tab-pane active">
+                @if (!ViewModel.ReadyOrders.Any())
+                {
+                    <div class="alert alert-success text-center">
+                        <i class="fas fa-check-circle"></i>
+                        No ready orders
+                    </div>
+                }
+                else
+                {
+                    <div class="row">
+                        @foreach (var order in ViewModel.ReadyOrders)
+                        {
+                            <div class="col-md-6 col-lg-4 mb-3">
+                                <div class="card border-success">
+                                    <div class="card-header bg-success text-white">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <strong>Order #@order.Id</strong>
+                                            <span class="badge bg-light text-dark">@order.Status</span>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-2">
+                                            <small class="text-muted">
+                                                @order.CreatedAt.ToString("HH:mm") • 
+                                                @order.ServiceType
+                                                @if (!string.IsNullOrEmpty(order.TableName))
+                                                {
+                                                    <span> • Table: @order.TableName</span>
+                                                }
+                                            </small>
+                                        </div>
+                                        
+                                        <div class="order-items mb-3">
+                                            @foreach (var item in order.OrderItems)
+                                            {
+                                                <div class="d-flex justify-content-between">
+                                                    <span>@item.Quantity x @item.MenuItemName</span>
+                                                    <span>฿@((item.Price * item.Quantity).ToString("F2"))</span>
+                                                </div>
+                                            }
+                                        </div>
+                                        
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <strong>Total: ฿@order.TotalAmount.ToString("F2")</strong>
+                                            <button class="btn btn-primary btn-sm" 
+                                                    @onclick="() => CompleteOrder(order.Id)">
+                                                Complete
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    }
+</div>
+
+@code {
+    [Parameter] public int ShopId { get; set; } = 1; // Default shop ID
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ViewModel.LoadOrdersAsync(ShopId);
+    }
+
+    private void SwitchTab(string tab)
+    {
+        ViewModel.ActiveTab = tab;
+        StateHasChanged();
+    }
+
+    private async Task RefreshOrders()
+    {
+        await ViewModel.LoadOrdersAsync(ShopId);
+        StateHasChanged();
+    }
+
+    private async Task MarkAsReady(int orderId)
+    {
+        var success = await ViewModel.MarkOrderAsReadyAsync(orderId);
+        if (success)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "Order marked as ready!");
+            StateHasChanged();
+        }
+        else
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "Failed to update order status.");
+        }
+    }
+
+    private async Task CompleteOrder(int orderId)
+    {
+        var success = await ViewModel.MarkOrderAsCompletedAsync(orderId);
+        if (success)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "Order completed!");
+            StateHasChanged();
+        }
+        else
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "Failed to complete order.");
+        }
+    }
+}

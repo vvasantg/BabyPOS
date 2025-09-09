@@ -1,0 +1,6 @@
+﻿@page "/"
+@layout BaseLayout
+
+<PageTitle>Home</PageTitle>
+
+<ShopList />

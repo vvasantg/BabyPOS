@@ -1,0 +1,71 @@
+﻿@page "/login"
+@inject HttpClient Http
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<h3>Login</h3>
+<div class="login-form">
+    <EditForm Model="loginModel" OnValidSubmit="HandleLogin">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <div>
+            <label>Username</label>
+            <InputText @bind-Value="loginModel.Username" class="form-control" />
+        </div>
+        <div>
+            <label>Password</label>
+            <InputText @bind-Value="loginModel.Password" type="password" class="form-control" />
+        </div>
+        <button type="submit" class="btn btn-primary">Login</button>
+    </EditForm>
+    <div style="margin-top:12px">
+        <NavLink href="/register">?????????????? ???????????</NavLink>
+    </div>
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="text-danger">@errorMessage</div>
+    }
+</div>
+
+@code {
+    public class LoginModel
+    {
+        public string Username { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+    }
+
+    LoginModel loginModel = new();
+    string? errorMessage;
+
+    private async Task HandleLogin()
+    {
+        errorMessage = null;
+        var response = await Http.PostAsJsonAsync("/api/users/login", loginModel);
+        if (response.IsSuccessStatusCode)
+        {
+            var result = await response.Content.ReadFromJsonAsync<LoginResult>();
+            if (result != null && !string.IsNullOrEmpty(result.token))
+            {
+                // Save JWT token to localStorage
+                await JS.InvokeVoidAsync("localStorage.setItem", "jwt", result.token);
+                Navigation.NavigateTo("/");
+            }
+            else
+            {
+                errorMessage = "Login failed. Invalid response.";
+            }
+        }
+        else
+        {
+            errorMessage = "Login failed. Please check your credentials.";
+        }
+    }
+
+    public class LoginResult
+    {
+        public string token { get; set; } = string.Empty;
+        public int id { get; set; }
+        public string username { get; set; } = string.Empty;
+        public string? email { get; set; }
+    }
+}

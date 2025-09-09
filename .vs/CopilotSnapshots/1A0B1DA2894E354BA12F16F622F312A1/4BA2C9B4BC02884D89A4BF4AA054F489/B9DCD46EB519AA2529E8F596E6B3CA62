@@ -1,0 +1,12 @@
+﻿@page "/shop-management"
+@layout MainLayout
+
+<PageTitle>Shop Management</PageTitle>
+
+<h2>จัดการร้านค้า</h2>
+
+<!-- Shop list section -->
+<div>
+    <!-- TODO: Add shop list, add/edit/delete shop, manage menu and employees -->
+    <p>หมายเหตุ: ฟีเจอร์เพิ่ม/แก้ไข/ลคร้านค้า, จัดการเมนู, จัดการพนักงาน (อยู่ระหว่างพัฒนา)</p>
+</div>

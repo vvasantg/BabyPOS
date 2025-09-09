@@ -1,0 +1,20 @@
+﻿@page "/"
+
+<PageTitle>Home</PageTitle>
+
+<!-- Header -->
+<header style="display: flex; justify-content: flex-end; align-items: center; min-height: 48px; border-bottom: 1px solid #eee; padding: 0 16px;">
+    <span style="margin-right: 8px; color: #888; font-size: 1rem;">เข้าสู่ระบบ:</span>
+    <UserMenu />
+</header>
+
+<!-- Body: ShopList -->
+<main style="padding: 24px 0; min-height: 60vh;">
+    <ShopList />
+</main>
+
+<!-- Footer -->
+<footer style="background: #f2f2f2; color: #888; text-align: center; padding: 16px; border-top: 1px solid #ddd;">
+    <!-- Footer content here -->
+    Footer Area
+</footer>

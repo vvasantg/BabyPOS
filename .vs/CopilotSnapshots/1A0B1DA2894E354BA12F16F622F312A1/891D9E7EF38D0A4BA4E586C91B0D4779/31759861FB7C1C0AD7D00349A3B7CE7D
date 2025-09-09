@@ -1,0 +1,105 @@
+﻿@inherits LayoutComponentBase
+
+<div class="main-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <!-- Logo/Brand -->
+        <div class="brand">
+            <h3 class="brand-text">BABY POS</h3>
+        </div>
+        
+        <!-- Main Navigation -->
+        <nav class="nav-menu">
+            <div class="nav-section">
+                <span class="nav-section-title">MAIN</span>
+                <ul class="nav-list">
+                    <li class="nav-item active">
+                        <NavLink href="/" class="nav-link">
+                            <i class="nav-icon">📊</i>
+                            <span>Overview</span>
+                        </NavLink>
+                    </li>
+                    <li class="nav-item">
+                        <NavLink href="/orders" class="nav-link">
+                            <i class="nav-icon">📋</i>
+                            <span>Orders</span>
+                        </NavLink>
+                    </li>
+                    <li class="nav-item">
+                        <NavLink href="/messages" class="nav-link">
+                            <i class="nav-icon">💬</i>
+                            <span>Messages</span>
+                        </NavLink>
+                    </li>
+                    <li class="nav-item">
+                        <NavLink href="/statistics" class="nav-link">
+                            <i class="nav-icon">📈</i>
+                            <span>Statistics</span>
+                        </NavLink>
+                    </li>
+                    <li class="nav-item">
+                        <NavLink href="/profile" class="nav-link">
+                            <i class="nav-icon">👤</i>
+                            <span>Profile</span>
+                        </NavLink>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="nav-section">
+                <span class="nav-section-title">SUPPORT</span>
+                <ul class="nav-list">
+                    <li class="nav-item">
+                        <NavLink href="/settings" class="nav-link">
+                            <i class="nav-icon">⚙️</i>
+                            <span>Settings</span>
+                        </NavLink>
+                    </li>
+                    <li class="nav-item">
+                        <NavLink href="/help" class="nav-link">
+                            <i class="nav-icon">❓</i>
+                            <span>Help</span>
+                        </NavLink>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        
+        <!-- Dark Mode Toggle -->
+        <div class="sidebar-footer">
+            <div class="dark-mode-toggle">
+                <i class="toggle-icon">🌙</i>
+                <span>Dark mode</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" />
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+    </aside>
+    
+    <!-- Main Content Area -->
+    <main class="main-content">
+        <!-- Top Header -->
+        <header class="top-header">
+            <div class="header-left">
+                <h2 class="page-title">Hello, User!</h2>
+            </div>
+            <div class="header-right">
+                <div class="search-box">
+                    <input type="text" placeholder="Search anything here..." class="search-input" />
+                    <i class="search-icon">🔍</i>
+                </div>
+                <div class="header-actions">
+                    <button class="notification-btn">🔔</button>
+                    <UserMenu />
+                </div>
+            </div>
+        </header>
+        
+        <!-- Content Area -->
+        <div class="content-area">
+            @Body
+        </div>
+    </main>
+</div>

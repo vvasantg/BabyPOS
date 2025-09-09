@@ -1,0 +1,9 @@
+.carousel-container[b-bwgcseqn2l] {
+    width: 100%;
+}
+@media (max-width: 768px) {
+    .carousel-container .col-md-4[b-bwgcseqn2l] {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+}

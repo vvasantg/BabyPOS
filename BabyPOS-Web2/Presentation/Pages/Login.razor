@@ -1,0 +1,114 @@
+@page "/login"
+@using BabyPOS_Web2.Presentation.ViewModels
+@inject LoginViewModel ViewModel
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Login - BabyPOS</PageTitle>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-4">
+            <div class="card mt-5">
+                <div class="card-header text-center">
+                    <h4>Login to BabyPOS</h4>
+                </div>
+                <div class="card-body">
+                    <EditForm Model="ViewModel" OnValidSubmit="HandleLogin">
+                        <DataAnnotationsValidator />
+                        
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Username</label>
+                            <InputText id="username" 
+                                      class="form-control" 
+                                      @bind-Value="ViewModel.Username" 
+                                      placeholder="Enter your username"
+                                      disabled="@ViewModel.IsLoading" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <InputText id="password" 
+                                      type="password" 
+                                      class="form-control" 
+                                      @bind-Value="ViewModel.Password" 
+                                      placeholder="Enter your password"
+                                      disabled="@ViewModel.IsLoading" />
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(ViewModel.ErrorMessage))
+                        {
+                            <div class="alert alert-danger" role="alert">
+                                <i class="oi oi-warning"></i> @ViewModel.ErrorMessage
+                            </div>
+                        }
+
+                        <div class="d-grid">
+                            <button type="submit" 
+                                    class="btn btn-primary" 
+                                    disabled="@ViewModel.IsLoading">
+                                @if (ViewModel.IsLoading)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                    <span>Logging in...</span>
+                                }
+                                else
+                                {
+                                    <span>Login</span>
+                                }
+                            </button>
+                        </div>
+                    </EditForm>
+
+                    <hr />
+                    
+                    <div class="text-center">
+                        <small class="text-muted">
+                            Don't have an account? 
+                            <a href="/register" class="text-decoration-none">Register here</a>
+                        </small>
+                    </div>
+
+                    <div class="mt-3">
+                        <div class="text-center">
+                            <small class="text-muted">
+                                <a href="/" class="text-decoration-none">
+                                    <i class="oi oi-arrow-left"></i> Back to Home
+                                </a>
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    protected override Task OnInitializedAsync()
+    {
+        // Check if user is already logged in
+        // If so, redirect to appropriate page
+        return Task.CompletedTask;
+    }
+
+    private async Task HandleLogin()
+    {
+        var success = await ViewModel.LoginAsync();
+        
+        if (success)
+        {
+            Navigation.NavigateTo("/orders", forceLoad: true); // Redirect and force reload after login
+        }
+        else
+        {
+            // Error message is already set in ViewModel
+            StateHasChanged();
+        }
+    }
+
+    private void GoToRegister()
+    {
+        Navigation.NavigateTo("/register");
+    }
+}

@@ -1,0 +1,117 @@
+﻿@page "/"
+@inject HttpClient Http
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+@using Microsoft.AspNetCore.Components
+
+<link href="css/shoplist.css" rel="stylesheet" />
+
+<div class="shop-list-container">
+    <header>
+        @if (isLoggedIn)
+        {
+            <span>@currentUsername</span>
+            <NavLink href="/shop-management">shop management</NavLink>
+            <a href="#" @onclick="Logout">logout</a>
+        }
+        else
+        {
+            <NavLink href="/login" class="login-btn">Login</NavLink>
+        }
+    </header>
+    <div class="shop-list">
+        @if (shops == null)
+        {
+            <div>Loading...</div>
+        }
+        else if (shops.Count == 0)
+        {
+            <div>No shops found.</div>
+        }
+        else
+        {
+            @foreach (var shop in shops)
+            {
+                <div class="shop-card">
+                    <img src="@shop.ImageUrl" alt="@shop.Name" class="shop-image" />
+                    <div class="shop-name">@shop.Name</div>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+@code {
+    public class Shop
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string ImageUrl { get; set; } = "https://via.placeholder.com/300x160?text=Shop";
+    }
+
+    List<Shop>? shops;
+    bool isLoggedIn = false;
+    string currentUsername = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CheckLoginState();
+        try
+        {
+            var response = await Http.GetAsync("/api/shops");
+            if (response.IsSuccessStatusCode)
+            {
+                shops = await response.Content.ReadFromJsonAsync<List<Shop>>();
+            }
+            else
+            {
+                shops = new List<Shop>();
+            }
+        }
+        catch
+        {
+            shops = new List<Shop>();
+        }
+    }
+
+    private async Task CheckLoginState()
+    {
+        var token = await JS.InvokeAsync<string>("localStorage.getItem", "jwt");
+        if (!string.IsNullOrEmpty(token))
+        {
+            isLoggedIn = true;
+            // decode username from token (simple way, not secure for prod)
+            var payload = token.Split('.')[1];
+            var json = System.Text.Encoding.UTF8.GetString(System.Convert.FromBase64String(PadBase64(payload)));
+            var username = System.Text.Json.JsonDocument.Parse(json).RootElement.GetProperty("unique_name").GetString();
+            currentUsername = username ?? "user";
+        }
+        else
+        {
+            isLoggedIn = false;
+            currentUsername = string.Empty;
+        }
+    }
+
+    private string PadBase64(string base64)
+    {
+        // JWT base64url decode helper
+        int padding = 4 - (base64.Length % 4);
+        if (padding < 4) base64 += new string('=', padding);
+        return base64.Replace('-', '+').Replace('_', '/');
+    }
+
+    private async Task Logout()
+    {
+        await JS.InvokeVoidAsync("localStorage.removeItem", "jwt");
+        isLoggedIn = false;
+        currentUsername = string.Empty;
+        Navigation.NavigateTo("/");
+    }
+
+    // เพิ่มฟังก์ชันสำหรับ redirect ไปหน้า ShopList
+    public void GoToShopList()
+    {
+        Navigation.NavigateTo("/");
+    }
+}

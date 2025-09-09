@@ -1,0 +1,17 @@
+﻿{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AllowedHosts": "*",
+  "ConnectionStrings": {
+    "DefaultConnection": "Host=localhost;Port=5432;Database=BabyPOS;Username=moviehit_user;Password=MovieHit@2024"
+  },
+  "Jwt": {
+    "Key": "SuperSecretKey",
+    "Issuer": "BabyPOS",
+    "Audience": "BabyPOSUsers"
+  }
+}
