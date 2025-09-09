@@ -1,6 +1,7 @@
 using BabyPOS_Web2.Application.DTOs;
 using System.Text.Json;
 using System.Text;
+using Microsoft.JSInterop;
 
 namespace BabyPOS_Web2.Infrastructure.Services
 {
@@ -8,10 +9,12 @@ namespace BabyPOS_Web2.Infrastructure.Services
     {
         private readonly HttpClient _httpClient;
         private readonly JsonSerializerOptions _jsonOptions;
+        private readonly IJSRuntime _jsRuntime;
 
-        public ApiService(HttpClient httpClient)
+        public ApiService(HttpClient httpClient, IJSRuntime jsRuntime)
         {
             _httpClient = httpClient;
+            _jsRuntime = jsRuntime;
             _jsonOptions = new JsonSerializerOptions
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -19,13 +22,37 @@ namespace BabyPOS_Web2.Infrastructure.Services
             };
         }
 
-        private async Task<T?> SendRequestAsync<T>(string endpoint, HttpMethod method, object? body = null)
+        private async Task<T?> SendRequestAsync<T>(string endpoint, HttpMethod method, object? body = null, bool requiresAuth = false)
         {
             try
             {
-                Console.WriteLine($"🚀 API Request: {method} {endpoint}");
+                var fullUrl = $"{_httpClient.BaseAddress?.ToString().TrimEnd('/')}/{endpoint.TrimStart('/')}";
+                Console.WriteLine($"🚀 API Request: {method} {fullUrl}");
                 
                 var request = new HttpRequestMessage(method, endpoint);
+                
+                // Add JWT token for authenticated requests
+                if (requiresAuth)
+                {
+                    try
+                    {
+                        var token = await _jsRuntime.InvokeAsync<string>("localStorage.getItem", "jwt");
+                        if (!string.IsNullOrEmpty(token))
+                        {
+                            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+                            Console.WriteLine($"🔐 Added JWT token to request");
+                        }
+                        else
+                        {
+                            Console.WriteLine($"⚠️ No JWT token found for authenticated request");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"❌ Error getting JWT token: {ex.Message}");
+                    }
+                }
+                
                 if (body != null)
                 {
                     var json = JsonSerializer.Serialize(body, _jsonOptions);
@@ -36,7 +63,7 @@ namespace BabyPOS_Web2.Infrastructure.Services
                 var response = await _httpClient.SendAsync(request);
                 var content = await response.Content.ReadAsStringAsync();
 
-                Console.WriteLine($"📥 Response Status: {response.StatusCode} ({(int)response.StatusCode})");
+                Console.WriteLine($"📥 Response Status: {response.StatusCode} ({(int)response.StatusCode}) for {endpoint}");
                 Console.WriteLine($"📥 Response Content: {(content.Length > 500 ? content.Substring(0, 500) + "..." : content)}");
 
                 if (response.IsSuccessStatusCode)
@@ -46,13 +73,13 @@ namespace BabyPOS_Web2.Infrastructure.Services
                 }
                 else
                 {
-                    Console.WriteLine($"❌ API Error: {response.StatusCode} - {content}");
+                    Console.WriteLine($"❌ API Error for {endpoint}: {response.StatusCode} - {content}");
                     return default(T);
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"💥 Exception in {endpoint}: {ex.Message}");
+                Console.WriteLine($"💥 Exception calling {endpoint}: {ex.Message}");
                 return default(T);
             }
         }
@@ -105,6 +132,29 @@ namespace BabyPOS_Web2.Infrastructure.Services
         public async Task<ShopDto?> GetShopAsync(int id)
         {
             return await SendRequestAsync<ShopDto>($"api/shops/{id}", HttpMethod.Get);
+        }
+
+        public async Task<ShopDto?> CreateShopAsync(ShopDto shop)
+        {
+            return await SendRequestAsync<ShopDto>("api/shops", HttpMethod.Post, shop, requiresAuth: true);
+        }
+
+        public async Task<bool> UpdateShopAsync(ShopDto shop)
+        {
+            var result = await SendRequestAsync<object>($"api/shops/{shop.Id}", HttpMethod.Put, shop, requiresAuth: true);
+            return result != null;
+        }
+
+        public async Task<bool> DeleteShopAsync(int id)
+        {
+            var result = await SendRequestAsync<object>($"api/shops/{id}", HttpMethod.Delete, requiresAuth: true);
+            return result != null;
+        }
+
+        public async Task<List<ShopDto>> GetShopsForManagementAsync()
+        {
+            var result = await SendRequestAsync<List<ShopDto>>("api/shops/manage", HttpMethod.Get, requiresAuth: true);
+            return result ?? new List<ShopDto>();
         }
 
         public async Task<List<MenuItemDto>> GetShopMenuItemsAsync(int shopId)

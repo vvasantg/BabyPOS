@@ -70,6 +70,23 @@ namespace BabyPOS_API.Controllers
         // สร้างร้านโดยใช้ user id จาก token
         [HttpPost]
         [Microsoft.AspNetCore.Authorization.Authorize]
+        public async Task<IActionResult> CreateShopMain([FromBody] Shop shop)
+        {
+            // ดึง user id จาก claims (sub หรือ NameIdentifier)
+            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+                ?? User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
+                return Unauthorized("Invalid token: cannot get user id");
+
+            shop.OwnerId = userId;
+            _context.Shops.Add(shop);
+            await _context.SaveChangesAsync();
+            return Ok(shop);
+        }
+
+        // สร้างร้านโดยใช้ user id จาก token (management endpoint)
+        [HttpPost("manage")]
+        [Microsoft.AspNetCore.Authorization.Authorize]
         public async Task<IActionResult> CreateShop([FromBody] Shop shop)
         {
             // ดึง user id จาก claims (sub หรือ NameIdentifier)
@@ -137,24 +154,97 @@ namespace BabyPOS_API.Controllers
             return Ok(shop);
         }
 
-        // ?????????
+        // แก้ไขร้านโดยเจ้าของร้าน (main endpoint)
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateShop(int id, [FromBody] Shop shop)
+        [Microsoft.AspNetCore.Authorization.Authorize]
+        public async Task<IActionResult> UpdateShopMain(int id, [FromBody] Shop shop)
         {
+            // ตรวจสอบ user id จาก token
+            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+                ?? User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
+                return Unauthorized("Invalid token: cannot get user id");
+
             var existing = await _context.Shops.FindAsync(id);
             if (existing == null) return NotFound();
+            
+            // ตรวจสอบว่าเป็นเจ้าของร้านหรือไม่
+            if (existing.OwnerId != userId)
+                return Forbid("You can only edit your own shops");
+                
+            // อัพเดทเฉพาะ Name เท่านั้น - ไม่แตะ OwnerId
             existing.Name = shop.Name;
-            existing.OwnerId = shop.OwnerId;
+            // ไม่ set existing.OwnerId เพราะต้องคงเดิม
             await _context.SaveChangesAsync();
             return Ok(existing);
         }
 
-        // ??????
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteShop(int id)
+        // แก้ไขร้านโดยเจ้าของร้าน (management endpoint)
+        [HttpPut("manage/{id}")]
+        [Microsoft.AspNetCore.Authorization.Authorize]
+        public async Task<IActionResult> UpdateShop(int id, [FromBody] Shop shop)
         {
+            // ตรวจสอบ user id จาก token
+            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+                ?? User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
+                return Unauthorized("Invalid token: cannot get user id");
+
+            var existing = await _context.Shops.FindAsync(id);
+            if (existing == null) return NotFound();
+            
+            // ตรวจสอบว่าเป็นเจ้าของร้านหรือไม่
+            if (existing.OwnerId != userId)
+                return Forbid("You can only edit your own shops");
+                
+            // อัพเดทเฉพาะ Name เท่านั้น - ไม่แตะ OwnerId
+            existing.Name = shop.Name;
+            // ไม่ set existing.OwnerId เพราะต้องคงเดิม
+            await _context.SaveChangesAsync();
+            return Ok(existing);
+        }
+
+        // ลบร้านโดยเจ้าของร้าน (main endpoint)
+        [HttpDelete("{id}")]
+        [Microsoft.AspNetCore.Authorization.Authorize]
+        public async Task<IActionResult> DeleteShopMain(int id)
+        {
+            // ตรวจสอบ user id จาก token
+            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+                ?? User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
+                return Unauthorized("Invalid token: cannot get user id");
+
             var shop = await _context.Shops.FindAsync(id);
             if (shop == null) return NotFound();
+            
+            // ตรวจสอบว่าเป็นเจ้าของร้านหรือไม่
+            if (shop.OwnerId != userId)
+                return Forbid("You can only delete your own shops");
+                
+            _context.Shops.Remove(shop);
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
+
+        // ลบร้านโดยเจ้าของร้าน (management endpoint)
+        [HttpDelete("manage/{id}")]
+        [Microsoft.AspNetCore.Authorization.Authorize]
+        public async Task<IActionResult> DeleteShop(int id)
+        {
+            // ตรวจสอบ user id จาก token
+            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+                ?? User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
+                return Unauthorized("Invalid token: cannot get user id");
+
+            var shop = await _context.Shops.FindAsync(id);
+            if (shop == null) return NotFound();
+            
+            // ตรวจสอบว่าเป็นเจ้าของร้านหรือไม่
+            if (shop.OwnerId != userId)
+                return Forbid("You can only delete your own shops");
+                
             _context.Shops.Remove(shop);
             await _context.SaveChangesAsync();
             return NoContent();

@@ -15,8 +15,13 @@ namespace BabyPOS_Web2.Infrastructure.Services
         
         Task<List<ShopDto>> GetShopsAsync();
         Task<ShopDto?> GetShopAsync(int id);
-    Task<List<MenuItemDto>> GetShopMenuItemsAsync(int shopId);
-    Task<List<TableDto>> GetTablesByShopAsync(int shopId);
-    Task<bool> SubmitOrderAsync(object orderData);
+        Task<ShopDto?> CreateShopAsync(ShopDto shop);
+        Task<bool> UpdateShopAsync(ShopDto shop);
+        Task<bool> DeleteShopAsync(int id);
+        Task<List<ShopDto>> GetShopsForManagementAsync();
+        
+        Task<List<MenuItemDto>> GetShopMenuItemsAsync(int shopId);
+        Task<List<TableDto>> GetTablesByShopAsync(int shopId);
+        Task<bool> SubmitOrderAsync(object orderData);
     }
 }

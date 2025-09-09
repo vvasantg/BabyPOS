@@ -1,0 +1,424 @@
+@page "/shops-management"
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Web
+@using BabyPOS_Web2.Application.DTOs
+@using BabyPOS_Web2.Presentation.Components
+@inject BabyPOS_Web2.Infrastructure.Services.IApiService ApiService
+@inject IJSRuntime JS
+@inject NavigationManager Navigation
+
+<PageTitle>Shops Management</PageTitle>
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>จัดการร้านค้า</h2>
+        <div>
+            <button class="btn btn-success me-2" @onclick="ShowAddShopModal">
+                <i class="bi bi-plus-circle"></i> เพิ่มร้านใหม่
+            </button>
+            <button class="btn btn-outline-primary" @onclick="RefreshShops">
+                <i class="bi bi-arrow-clockwise"></i> รีเฟรช
+            </button>
+        </div>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">กำลังโหลดข้อมูลร้านค้า...</p>
+        </div>
+    }
+    else if (shops.Count == 0)
+    {
+        <div class="alert alert-info text-center">
+            <h4>ไม่พบข้อมูลร้านค้า</h4>
+            <p>ยังไม่มีร้านค้าในระบบ คลิก "เพิ่มร้านใหม่" เพื่อเริ่มต้น</p>
+        </div>
+    }
+    else
+    {
+        <ShopCardCarousel TShop="ShopDto" 
+                         Shops="shops" 
+                         GetShopName="shop => shop.Name" 
+                         GetShopDescription="shop => shop.Description" 
+                         GetShopImages="GetShopImages"
+                         GetShopMenuItems="GetShopMenuItems">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <small class="text-muted">Shop ID: @context.Id</small>
+                </div>
+                <div class="btn-group">
+                    <a class="btn btn-outline-primary btn-sm" href="@($"/food-list/{context.Id}")">
+                        <i class="bi bi-list"></i> จัดการเมนู
+                    </a>
+                    <button class="btn btn-outline-warning btn-sm" @onclick="() => ShowEditShopModal(context)">
+                        <i class="bi bi-pencil"></i> แก้ไข
+                    </button>
+                    <button class="btn btn-outline-danger btn-sm" @onclick="() => ShowDeleteConfirmModal(context)">
+                        <i class="bi bi-trash"></i> ลบ
+                    </button>
+                </div>
+            </div>
+        </ShopCardCarousel>
+    }
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger mt-3">
+            <strong>Error:</strong> @errorMessage
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(successMessage))
+    {
+        <div class="alert alert-success mt-3">
+            <strong>Success:</strong> @successMessage
+        </div>
+    }
+</div>
+
+<!-- Add/Edit Shop Modal -->
+<div class="modal fade @(showShopModal ? "show d-block" : "")" tabindex="-1" style="@(showShopModal ? "background-color: rgba(0,0,0,0.5);" : "")">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">@(isEditMode ? "แก้ไขร้านค้า" : "เพิ่มร้านใหม่")</h5>
+                <button type="button" class="btn-close" @onclick="HideShopModal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">ชื่อร้าน</label>
+                    <input class="form-control" @bind="currentShop.Name" placeholder="กรอกชื่อร้าน" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">คำอธิบาย</label>
+                    <textarea class="form-control" @bind="currentShop.Description" placeholder="กรอกคำอธิบายร้าน" rows="3"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" @onclick="HideShopModal">ยกเลิก</button>
+                <button type="button" class="btn btn-primary" @onclick="SaveShop" disabled="@isSaving">
+                    @if (isSaving)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2"></span>
+                    }
+                    @(isEditMode ? "บันทึกการแก้ไข" : "เพิ่มร้าน")
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade @(showDeleteModal ? "show d-block" : "")" tabindex="-1" style="@(showDeleteModal ? "background-color: rgba(0,0,0,0.5);" : "")">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">ยืนยันการลบ</h5>
+                <button type="button" class="btn-close" @onclick="HideDeleteModal"></button>
+            </div>
+            <div class="modal-body">
+                <p>คุณแน่ใจว่าต้องการลบร้าน <strong>@shopToDelete?.Name</strong> ใช่หรือไม่?</p>
+                <p class="text-danger"><small>การดำเนินการนี้ไม่สามารถยกเลิกได้</small></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" @onclick="HideDeleteModal">ยกเลิก</button>
+                <button type="button" class="btn btn-danger" @onclick="DeleteShop" disabled="@isDeleting">
+                    @if (isDeleting)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2"></span>
+                    }
+                    ลบร้าน
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<ShopDto> shops = new();
+    private bool isLoading = true;
+    private string errorMessage = string.Empty;
+    private string successMessage = string.Empty;
+    private Dictionary<int, List<MenuItemDto>> shopMenuItems = new();
+
+    // Modal states
+    private bool showShopModal = false;
+    private bool showDeleteModal = false;
+    private bool isEditMode = false;
+    private bool isSaving = false;
+    private bool isDeleting = false;
+
+    // Current shop data
+    private ShopDto currentShop = new();
+    private ShopDto? shopToDelete;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadShops();
+    }
+
+    private async Task LoadShops()
+    {
+        try
+        {
+            isLoading = true;
+            errorMessage = string.Empty;
+            Console.WriteLine("📋 Loading shops for management...");
+            
+            shops = await ApiService.GetShopsForManagementAsync();
+            Console.WriteLine($"📋 Loaded {shops.Count} shops");
+            
+            // Load menu items for each shop
+            shopMenuItems.Clear();
+            foreach (var shop in shops)
+            {
+                try
+                {
+                    var menuItems = await ApiService.GetShopMenuItemsAsync(shop.Id);
+                    shopMenuItems[shop.Id] = menuItems;
+                    Console.WriteLine($"🍽️ Loaded {menuItems.Count} menu items for shop {shop.Id}");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"❌ Failed to load menu items for shop {shop.Id}: {ex.Message}");
+                    shopMenuItems[shop.Id] = new List<MenuItemDto>();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"เกิดข้อผิดพลาดในการโหลดข้อมูล: {ex.Message}";
+            Console.WriteLine($"❌ LoadShops failed: {ex.Message}");
+            shops = new();
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task RefreshShops()
+    {
+        successMessage = string.Empty;
+        await LoadShops();
+    }
+
+    private IEnumerable<string> GetShopImages(ShopDto shop)
+    {
+        // Get real menu item images from API data
+        if (shopMenuItems.TryGetValue(shop.Id, out var menuItems) && menuItems.Any())
+        {
+            return menuItems
+                .Where(m => !string.IsNullOrEmpty(m.ImagePath))
+                .Select(m => m.ImagePath!)
+                .Take(3);
+        }
+        
+        // Fallback to default image
+        return new List<string> { "/img/food/default.png" };
+    }
+
+    private IEnumerable<MenuItemDto> GetShopMenuItems(ShopDto shop)
+    {
+        // Return real menu items from API
+        if (shopMenuItems.TryGetValue(shop.Id, out var menuItems))
+        {
+            return menuItems.Take(3);
+        }
+        
+        return new List<MenuItemDto>();
+    }
+
+    // Modal methods
+    private void ShowAddShopModal()
+    {
+        currentShop = new ShopDto();
+        isEditMode = false;
+        showShopModal = true;
+    }
+
+    private void ShowEditShopModal(ShopDto shop)
+    {
+        currentShop = new ShopDto
+        {
+            Id = shop.Id,
+            Name = shop.Name,
+            Description = shop.Description,
+            OwnerId = shop.OwnerId
+        };
+        isEditMode = true;
+        showShopModal = true;
+    }
+
+    private void HideShopModal()
+    {
+        showShopModal = false;
+        currentShop = new();
+    }
+
+    private void ShowDeleteConfirmModal(ShopDto shop)
+    {
+        shopToDelete = shop;
+        showDeleteModal = true;
+    }
+
+    private void HideDeleteModal()
+    {
+        showDeleteModal = false;
+        shopToDelete = null;
+    }
+
+    private async Task<int?> GetCurrentUserIdFromJwt()
+    {
+        try
+        {
+            var token = await JS.InvokeAsync<string>("localStorage.getItem", "jwt");
+            if (string.IsNullOrEmpty(token))
+                return null;
+
+            // Decode JWT payload (simple base64 decode)
+            var parts = token.Split('.');
+            if (parts.Length != 3)
+                return null;
+
+            var payload = parts[1];
+            // Add padding if needed
+            switch (payload.Length % 4)
+            {
+                case 2: payload += "=="; break;
+                case 3: payload += "="; break;
+            }
+
+            var jsonBytes = Convert.FromBase64String(payload);
+            var jsonString = System.Text.Encoding.UTF8.GetString(jsonBytes);
+            var jsonDoc = System.Text.Json.JsonDocument.Parse(jsonString);
+            
+            if (jsonDoc.RootElement.TryGetProperty("sub", out var subElement) ||
+                jsonDoc.RootElement.TryGetProperty("nameid", out subElement) ||
+                jsonDoc.RootElement.TryGetProperty("userId", out subElement))
+            {
+                if (int.TryParse(subElement.GetString(), out var userId))
+                    return userId;
+            }
+
+            return null;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error parsing JWT: {ex.Message}");
+            return null;
+        }
+    }
+
+    private async Task SaveShop()
+    {
+        try
+        {
+            isSaving = true;
+            errorMessage = string.Empty;
+            Console.WriteLine("🏪 Starting SaveShop process...");
+
+            if (string.IsNullOrWhiteSpace(currentShop.Name))
+            {
+                errorMessage = "กรุณากรอกชื่อร้าน";
+                Console.WriteLine("❌ Validation failed: Shop name is empty");
+                return;
+            }
+
+            if (isEditMode)
+            {
+                Console.WriteLine($"📝 Updating shop ID: {currentShop.Id}, Name: {currentShop.Name}");
+                Console.WriteLine($"📤 Sending PUT request to /api/shops/{currentShop.Id}");
+                // Update existing shop
+                var success = await ApiService.UpdateShopAsync(currentShop);
+                if (success)
+                {
+                    successMessage = "แก้ไขข้อมูลร้านเรียบร้อยแล้ว";
+                    Console.WriteLine("✅ Shop updated successfully");
+                    HideShopModal();
+                    await LoadShops();
+                }
+                else
+                {
+                    errorMessage = "เกิดข้อผิดพลาดในการแก้ไขร้าน - API ตอบกลับไม่สำเร็จ (อาจไม่ใช่เจ้าของร้าน หรือ JWT หมดอายุ)";
+                    Console.WriteLine("❌ Shop update failed");
+                }
+            }
+            else
+            {
+                Console.WriteLine($"🆕 Creating new shop: {currentShop.Name}");
+                // Create new shop - API will get Owner ID from JWT token automatically
+                Console.WriteLine($"📤 Sending shop data without OwnerId (API will set it from JWT)");
+                
+                // Don't set OwnerId - let API handle it from JWT
+                var shopData = new ShopDto 
+                { 
+                    Name = currentShop.Name,
+                    Description = currentShop.Description 
+                };
+                
+                var newShop = await ApiService.CreateShopAsync(shopData);
+                if (newShop != null)
+                {
+                    successMessage = "เพิ่มร้านใหม่เรียบร้อยแล้ว";
+                    Console.WriteLine($"✅ New shop created successfully with ID: {newShop.Id}");
+                    HideShopModal();
+                    await LoadShops();
+                }
+                else
+                {
+                    errorMessage = "เกิดข้อผิดพลาดในการเพิ่มร้าน - API ตอบกลับ 405 Method Not Allowed (อาจเป็นปัญหาที่ endpoint หรือ authorization)";
+                    Console.WriteLine("❌ Shop creation failed - API returned null");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"เกิดข้อผิดพลาด: {ex.Message}";
+            Console.WriteLine($"❌ Exception in SaveShop: {ex.Message}");
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private async Task DeleteShop()
+    {
+        if (shopToDelete == null) return;
+
+        try
+        {
+            isDeleting = true;
+            errorMessage = string.Empty;
+            Console.WriteLine($"🗑️ Deleting shop: ID={shopToDelete.Id}, Name={shopToDelete.Name}");
+
+            var success = await ApiService.DeleteShopAsync(shopToDelete.Id);
+            if (success)
+            {
+                successMessage = $"ลบร้าน {shopToDelete.Name} เรียบร้อยแล้ว";
+                Console.WriteLine($"✅ Shop deleted successfully: {shopToDelete.Name}");
+                HideDeleteModal();
+                await LoadShops();
+            }
+            else
+            {
+                errorMessage = "เกิดข้อผิดพลาดในการลบร้าน - API ตอบกลับไม่สำเร็จ (อาจไม่ใช่เจ้าของร้าน หรือ JWT หมดอายุ)";
+                Console.WriteLine($"❌ Shop deletion failed for ID: {shopToDelete.Id}");
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"เกิดข้อผิดพลาด: {ex.Message}";
+            Console.WriteLine($"❌ Exception in DeleteShop: {ex.Message}");
+        }
+        finally
+        {
+            isDeleting = false;
+        }
+    }
+}
