@@ -1,0 +1,146 @@
+@using Microsoft.JSInterop
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Routing
+
+<div class="modern-sidebar">
+    <div class="sidebar-header">
+        <div class="logo">
+            <i class="fas fa-store"></i>
+            <span class="logo-text">BabyPOS</span>
+        </div>
+        <button class="sidebar-toggle" @onclick="ToggleSidebar">
+            <i class="fas fa-bars"></i>
+        </button>
+    </div>
+
+    <nav class="sidebar-nav">
+    <div class="nav-section">
+            <div class="nav-item @(IsActive("") ? "active" : "")">
+                <NavLink href="" Match="NavLinkMatch.All">
+                    <i class="fas fa-home"></i>
+                    <span class="nav-text">หน้าหลัก</span>
+                </NavLink>
+            </div>
+            
+            <div class="nav-item @(IsActive("shops") ? "active" : "")">
+                <NavLink href="shops">
+                    <i class="fas fa-store"></i>
+                    <span class="nav-text">ร้านค้า</span>
+                </NavLink>
+            </div>
+
+            @if (isLoggedIn)
+            {
+                <div class="nav-item @(IsActive("shops-management") ? "active" : "")">
+                    <NavLink href="shops-management">
+                        <i class="fas fa-cogs"></i>
+                        <span class="nav-text">จัดการร้านค้า</span>
+                    </NavLink>
+                </div>
+            }
+
+            <div class="nav-item @(IsActive("orders") ? "active" : "")">
+                <NavLink href="orders">
+                    <i class="fas fa-clipboard-list"></i>
+                    <span class="nav-text">จัดการออเดอร์</span>
+                </NavLink>
+            </div>
+
+            <div class="nav-item @(IsActive("menu") ? "active" : "")">
+                <NavLink href="menu">
+                    <i class="fas fa-utensils"></i>
+                    <span class="nav-text">เมนูอาหาร</span>
+                </NavLink>
+            </div>
+
+            <div class="nav-item @(IsActive("about") ? "active" : "")">
+                <NavLink href="about">
+                    <i class="fas fa-info-circle"></i>
+                    <span class="nav-text">เกี่ยวกับ</span>
+                </NavLink>
+            </div>
+        </div>
+
+        <div class="nav-section nav-bottom">
+            @if (isLoggedIn)
+            {
+                <div class="nav-item">
+                    <a href="#" @onclick="Logout" @onclick:preventDefault="true">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span class="nav-text">ออกจากระบบ</span>
+                    </a>
+                </div>
+            }
+            else
+            {
+                <div class="nav-item @(IsActive("login") ? "active" : "")">
+                    <NavLink href="login">
+                        <i class="fas fa-sign-in-alt"></i>
+                        <span class="nav-text">เข้าสู่ระบบ</span>
+                    </NavLink>
+                </div>
+            }
+        </div>
+    </nav>
+</div>
+
+@code {
+    [Inject] private IJSRuntime JS { get; set; } = default!;
+    [Inject] private NavigationManager Navigation { get; set; } = default!;
+    
+    private bool isCollapsed = false;
+    private bool isLoggedIn = false;
+    private string currentPath = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CheckLoginState();
+        currentPath = Navigation.ToBaseRelativePath(Navigation.Uri);
+        Navigation.LocationChanged += OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        currentPath = Navigation.ToBaseRelativePath(e.Location);
+        StateHasChanged();
+    }
+
+    private bool IsActive(string path)
+    {
+        if (string.IsNullOrEmpty(path))
+            return currentPath == "";
+        return currentPath.StartsWith(path);
+    }
+
+    private async Task CheckLoginState()
+    {
+        try
+        {
+            var token = await JS.InvokeAsync<string>("localStorage.getItem", "jwt");
+            isLoggedIn = !string.IsNullOrEmpty(token);
+        }
+        catch
+        {
+            isLoggedIn = false;
+        }
+        StateHasChanged();
+    }
+
+    private async Task Logout()
+    {
+        await JS.InvokeVoidAsync("localStorage.removeItem", "jwt");
+        isLoggedIn = false;
+        Navigation.NavigateTo("/");
+    }
+
+    private async Task ToggleSidebar()
+    {
+        isCollapsed = !isCollapsed;
+        await JS.InvokeVoidAsync("document.body.classList.toggle", "sidebar-collapsed", isCollapsed);
+    }
+
+    public void Dispose()
+    {
+        Navigation.LocationChanged -= OnLocationChanged;
+    }
+}
