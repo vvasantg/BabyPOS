@@ -29,6 +29,7 @@ builder.Services.AddHttpClient("BabyPOS-API", client =>
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IMenuService, MenuService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IThemeService, ThemeService>();
 
 // Register ViewModels
 builder.Services.AddScoped<OrderManagementViewModel>();

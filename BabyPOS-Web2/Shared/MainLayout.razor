@@ -1,4 +1,5 @@
 ﻿@inherits LayoutComponentBase
+@using BabyPOS_Web2.Presentation.Components
 
 <PageTitle>BabyPOS-Web2</PageTitle>
 
@@ -11,7 +12,8 @@
                 <i class="fas fa-store fa-lg me-2" style="color:#ffb300;"></i>
                 <span class="fw-bold fs-5">BabyPOS</span>
             </a>
-            <div>
+            <div class="d-flex align-items-center gap-3">
+                <ThemeSelector />
                 <UserMenu />
             </div>
         </div>

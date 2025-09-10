@@ -1,0 +1,70 @@
+@using BabyPOS_Web2.Infrastructure.Services
+@inject IThemeService ThemeService
+@implements IDisposable
+
+<div class="dropdown">
+    <button class="btn btn-sm btn-outline-light dropdown-toggle" type="button" id="themeDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="fas fa-palette me-1"></i>
+        @GetThemeDisplayName(currentTheme)
+    </button>
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="themeDropdown">
+        <li>
+            <button class="dropdown-item @(currentTheme == "default" ? "active" : "")" 
+                    @onclick="@(() => ChangeTheme("default"))">
+                <i class="fas fa-heart me-2 text-warning"></i>
+                Loveable Theme
+            </button>
+        </li>
+        <li>
+            <button class="dropdown-item @(currentTheme == "pastel" ? "active" : "")" 
+                    @onclick="@(() => ChangeTheme("pastel"))">
+                <i class="fas fa-sun me-2 text-warning"></i>
+                Pastel Theme
+            </button>
+        </li>
+    </ul>
+</div>
+
+@code {
+    private string currentTheme = "default";
+
+    protected override async Task OnInitializedAsync()
+    {
+        ThemeService.ThemeChanged += OnThemeChanged;
+        currentTheme = await ThemeService.GetCurrentThemeAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await ThemeService.InitializeThemeAsync();
+        }
+    }
+
+    private async Task ChangeTheme(string theme)
+    {
+        await ThemeService.SetThemeAsync(theme);
+    }
+
+    private void OnThemeChanged(string theme)
+    {
+        currentTheme = theme;
+        InvokeAsync(StateHasChanged);
+    }
+
+    private string GetThemeDisplayName(string theme)
+    {
+        return theme switch
+        {
+            "pastel" => "Pastel",
+            "default" => "Loveable",
+            _ => "Loveable"
+        };
+    }
+
+    public void Dispose()
+    {
+        ThemeService.ThemeChanged -= OnThemeChanged;
+    }
+}

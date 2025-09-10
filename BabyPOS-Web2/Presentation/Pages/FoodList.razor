@@ -48,32 +48,31 @@
     else
     {
         <div class="row g-3">
-            @foreach (var chunk in FilteredMenuItems.Chunk(3))
+            @foreach (var item in FilteredMenuItems)
             {
-                @foreach (var item in chunk)
-                {
-                    <div class="col-12 col-md-4 d-flex">
-                        <div class="card flex-fill">
-                            <div class="card-body">
-                                @if (!string.IsNullOrEmpty(item.ImagePath))
-                                {
-                                    <img src="@item.ImagePath" alt="@item.Name" style="width:100%;max-width:120px;max-height:120px;object-fit:cover;display:block;margin:auto;" />
-                                }
-                                else
-                                {
-                                    <img src="/img/food/default.png" alt="no image" style="width:100%;max-width:120px;max-height:120px;object-fit:cover;display:block;margin:auto;opacity:0.5;" />
-                                }
-                                <h5 class="card-title mt-2">@item.Name</h5>
-                                <div class="fw-bold">฿@item.Price</div>
-                                <div class="text-muted">@GetCategoryText(item.Category)</div>
-                                <div class="mt-2">
-                                    <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => ShowEditFoodModal(item)">แก้ไข</button>
-                                    <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteFoodAsync(item.Id)">ลบ</button>
-                                </div>
+                <div class="col-12 col-md-3 d-flex">
+                    <div class="card flex-fill">
+                        <div class="card-body">
+                            @if (!string.IsNullOrEmpty(item.ImagePath))
+                            {
+                                <img src="@item.ImagePath" alt="@item.Name" />
+                            }
+                            else
+                            {
+                                <img src="/img/food/placeholder.png" alt="no image" style="opacity:0.5;" />
+                            }
+                            <h5 class="card-title">@item.Name</h5>
+                            <div class="food-price">฿@item.Price</div>
+                            <div class="food-category">@GetCategoryText(item.Category)</div>
+                            <div class="card-actions">
+                                <button class="btn btn-sm @(GetEditButtonClass(item.Id)) flex-fill me-1" @onclick="() => ToggleOnHold(item.Id)">
+                                    @(IsOnHold(item.Id) ? "On Hold" : "แก้ไข")
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger flex-fill" @onclick="() => DeleteFoodAsync(item.Id)">ลบ</button>
                             </div>
                         </div>
                     </div>
-                }
+                </div>
             }
         </div>
     }
@@ -282,6 +281,9 @@
     FoodCategory newFoodCategory = FoodCategory.MainDish;
     string newFoodImagePath = "/img/food/default.png";
 
+    // On Hold Management
+    private HashSet<int> onHoldItems = new HashSet<int>();
+
     protected override async Task OnInitializedAsync()
     {
         await LoadShopInfoAsync();
@@ -446,6 +448,29 @@
         finally
         {
             isSaving = false;
+        }
+    }
+
+    // On Hold Management Methods
+    bool IsOnHold(int itemId)
+    {
+        return onHoldItems.Contains(itemId);
+    }
+
+    string GetEditButtonClass(int itemId)
+    {
+        return IsOnHold(itemId) ? "btn-warning" : "btn-outline-warning";
+    }
+
+    void ToggleOnHold(int itemId)
+    {
+        if (onHoldItems.Contains(itemId))
+        {
+            onHoldItems.Remove(itemId);
+        }
+        else
+        {
+            onHoldItems.Add(itemId);
         }
     }
 

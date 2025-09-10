@@ -2,6 +2,9 @@
 # BABYPOS SPECIFIC PATTERNS
 # ======================
 
+# External theme references (not part of main project)
+pastel-pos-theme/
+
 # Build artifacts for each project
 BabyPOS-API/bin/*
 BabyPOS-API/obj/*

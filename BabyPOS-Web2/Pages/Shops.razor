@@ -1,56 +1,63 @@
 @page "/shops"
 @using BabyPOS_Web2.Application.DTOs
-@using BabyPOS_Web2.Presentation.Components
 @inject BabyPOS_Web2.Infrastructure.Services.IApiService ApiService
+@inject NavigationManager NavigationManager
 
-<PageTitle>Shops</PageTitle>
+<PageTitle>ร้านค้าทั้งหมด</PageTitle>
 
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>ร้านค้าทั้งหมด</h2>
-        <button class="btn btn-success" @onclick="RefreshShops">
-            <i class="bi bi-arrow-clockwise"></i> รีเฟรช
-        </button>
+        <h2 class="mb-0">ร้านค้าทั้งหมด</h2>
+        <div class="d-flex gap-2">
+            <button class="btn btn-secondary" @onclick="RefreshShops">
+                <i class="fas fa-sync-alt me-2"></i>
+                รีเฟรช
+            </button>
+        </div>
     </div>
 
     @if (isLoading)
     {
-        <div class="text-center py-5">
-            <div class="spinner-border" role="status">
+        <div class="loading-container">
+            <div class="spinner-border text-primary mb-3" role="status">
                 <span class="visually-hidden">Loading...</span>
             </div>
-            <p class="mt-2">กำลังโหลดข้อมูลร้านค้า...</p>
+            <p>กำลังโหลดร้านค้า...</p>
         </div>
     }
-    else if (shops.Count == 0)
+    else if (!shops.Any())
     {
-        <div class="alert alert-info text-center">
-            <h4>ไม่พบข้อมูลร้านค้า</h4>
-            <p>ยังไม่มีร้านค้าในระบบ</p>
+        <div class="text-center py-5">
+            <i class="fas fa-store fa-4x text-muted mb-3"></i>
+            <h5 class="text-muted">ยังไม่มีร้านค้า</h5>
+            <p class="text-muted">เริ่มต้นด้วยการเพิ่มร้านค้าแรกของคุณ</p>
         </div>
     }
     else
     {
-        <ShopCardCarousel TShop="ShopDto" 
-                         Shops="shops" 
-                         GetShopName="shop => shop.Name" 
-                         GetShopDescription="shop => shop.Description" 
-                         GetShopImages="GetShopImages"
-                         GetShopMenuItems="GetShopMenuItems">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <!-- Shop ID removed for customer privacy -->
+        <div class="shops-grid">
+            @foreach (var shop in shops)
+            {
+                <div class="shop-card" @onclick="() => NavigateToShop(shop.Id)">
+                    <div class="shop-image-container">
+                        @{
+                            var shopImage = GetShopImage(shop);
+                        }
+                        <img src="@shopImage" 
+                             alt="@shop.Name" 
+                             class="shop-image"
+                             onerror="this.src='/img/food/placeholder.png';" />
+                    </div>
+                    <div class="shop-name">@shop.Name</div>
+                    <div class="shop-id">ร้านที่ @shop.Id</div>
                 </div>
-                <a class="btn btn-primary btn-sm" href="@($"/shops-menu/{context.Id}")">
-                    ดูเมนู
-                </a>
-            </div>
-        </ShopCardCarousel>
+            }
+        </div>
     }
 
     @if (!string.IsNullOrEmpty(errorMessage))
     {
-        <div class="alert alert-danger mt-3">
+        <div class="alert alert-danger mt-4">
             <strong>Error:</strong> @errorMessage
         </div>
     }
@@ -75,7 +82,7 @@
             errorMessage = string.Empty;
             shops = await ApiService.GetShopsAsync();
             
-            // Load menu items for each shop
+            // Load menu items for each shop to get images
             shopMenuItems.Clear();
             foreach (var shop in shops)
             {
@@ -107,29 +114,24 @@
         await LoadShops();
     }
 
-    private IEnumerable<string> GetShopImages(ShopDto shop)
+    private void NavigateToShop(int shopId)
     {
-        // Get real menu item images from API data
-        if (shopMenuItems.TryGetValue(shop.Id, out var menuItems) && menuItems.Any())
-        {
-            return menuItems
-                .Where(m => !string.IsNullOrEmpty(m.ImagePath))
-                .Select(m => m.ImagePath!)
-                .Take(3);
-        }
-        
-        // Fallback to default image
-        return new List<string> { "/img/food/default.png" };
+        NavigationManager.NavigateTo($"/food-list/{shopId}");
     }
 
-    private IEnumerable<MenuItemDto> GetShopMenuItems(ShopDto shop)
+    private string GetShopImage(ShopDto shop)
     {
-        // Return real menu items from API
-        if (shopMenuItems.TryGetValue(shop.Id, out var menuItems))
+        // Try to get the first available menu item image for the shop
+        if (shopMenuItems.TryGetValue(shop.Id, out var menuItems) && menuItems.Any())
         {
-            return menuItems.Take(3);
+            var imageItem = menuItems.FirstOrDefault(m => !string.IsNullOrEmpty(m.ImagePath));
+            if (imageItem != null)
+            {
+                return imageItem.ImagePath!;
+            }
         }
         
-        return new List<MenuItemDto>();
+        // Fallback to default placeholder
+        return "/img/food/placeholder.png";
     }
 }

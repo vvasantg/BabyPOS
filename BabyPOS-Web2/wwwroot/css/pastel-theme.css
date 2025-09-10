@@ -1,0 +1,629 @@
+/* Pastel POS Theme - Inspired by Lovable Design System */
+
+/* Import Inter font for modern typography */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* CSS Variables - HSL Color System */
+:root {
+    /* Core Colors - Pastel Orange Theme */
+    --pastel-background: hsl(0, 0%, 100%);
+    --pastel-foreground: hsl(25, 25%, 15%);
+    
+    /* Primary - Warm Orange */
+    --pastel-primary: hsl(24, 90%, 65%);
+    --pastel-primary-foreground: hsl(0, 0%, 100%);
+    
+    /* Secondary Colors */
+    --pastel-secondary: hsl(25, 10%, 96%);
+    --pastel-secondary-foreground: hsl(25, 25%, 15%);
+    
+    /* Muted Colors */
+    --pastel-muted: hsl(25, 5%, 96%);
+    --pastel-muted-foreground: hsl(25, 15%, 55%);
+    
+    /* Accent Colors */
+    --pastel-accent: hsl(24, 100%, 88%);
+    --pastel-accent-foreground: hsl(25, 25%, 15%);
+    
+    /* Card Colors */
+    --pastel-card: hsl(0, 0%, 100%);
+    --pastel-card-foreground: hsl(25, 25%, 15%);
+    
+    /* Border Colors */
+    --pastel-border: hsl(25, 15%, 90%);
+    --pastel-input: hsl(25, 15%, 95%);
+    
+    /* POS Specific Colors */
+    --pastel-header: hsl(16, 100%, 72%);
+    --pastel-header-foreground: hsl(0, 0%, 100%);
+    --pastel-card-border: hsl(25, 15%, 92%);
+    --pastel-price: hsl(24, 90%, 65%);
+    --pastel-category: hsl(24, 100%, 88%);
+    --pastel-category-active: hsl(24, 90%, 65%);
+    
+    /* Success & Error */
+    --pastel-success: hsl(120, 50%, 55%);
+    --pastel-success-foreground: hsl(0, 0%, 100%);
+    --pastel-error: hsl(0, 84%, 60%);
+    --pastel-error-foreground: hsl(0, 0%, 100%);
+    
+    /* Shadows */
+    --pastel-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --pastel-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    --pastel-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --pastel-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Apply theme when .theme-pastel class is present */
+.theme-pastel {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: var(--pastel-background);
+    color: var(--pastel-foreground);
+    line-height: 1.5;
+}
+
+/* Header Styling */
+.theme-pastel .top-row {
+    background: linear-gradient(135deg, var(--pastel-header) 0%, hsl(16, 95%, 68%) 100%);
+    color: var(--pastel-header-foreground);
+    padding: 1rem 1.5rem;
+    box-shadow: var(--pastel-shadow-sm);
+    border-bottom: 1px solid var(--pastel-border);
+}
+
+.theme-pastel .header-logo {
+    color: var(--pastel-header-foreground) !important;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1.25rem;
+    transition: opacity 0.2s ease;
+}
+
+.theme-pastel .header-logo:hover {
+    opacity: 0.9;
+}
+
+.theme-pastel .header-logo i {
+    color: rgba(255, 255, 255, 0.9);
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+}
+
+/* Main Content */
+.theme-pastel .content {
+    background-color: var(--pastel-background);
+    min-height: calc(100vh - 70px);
+    padding: 2rem 1.5rem;
+}
+
+/* Page Title */
+.theme-pastel h1, 
+.theme-pastel h2, 
+.theme-pastel h3 {
+    color: var(--pastel-foreground);
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+}
+
+/* Cards */
+.theme-pastel .card {
+    background-color: var(--pastel-card);
+    border: 1px solid var(--pastel-card-border);
+    border-radius: 12px;
+    box-shadow: var(--pastel-shadow);
+    transition: all 0.2s ease;
+    overflow: hidden;
+}
+
+.theme-pastel .card:hover {
+    box-shadow: var(--pastel-shadow-md);
+    transform: translateY(-1px);
+}
+
+.theme-pastel .card-body {
+    padding: 1.5rem;
+}
+
+.theme-pastel .card-title {
+    color: var(--pastel-foreground);
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+}
+
+.theme-pastel .card-text {
+    color: var(--pastel-muted-foreground);
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+/* Buttons */
+.theme-pastel .btn {
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 0.875rem;
+    padding: 0.625rem 1.25rem;
+    transition: all 0.2s ease;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.theme-pastel .btn-primary {
+    background: linear-gradient(135deg, var(--pastel-primary) 0%, hsl(24, 85%, 60%) 100%);
+    color: var(--pastel-primary-foreground);
+    box-shadow: var(--pastel-shadow-sm);
+}
+
+.theme-pastel .btn-primary:hover {
+    background: linear-gradient(135deg, hsl(24, 85%, 60%) 0%, hsl(24, 80%, 55%) 100%);
+    box-shadow: var(--pastel-shadow);
+    transform: translateY(-1px);
+}
+
+.theme-pastel .btn-secondary {
+    background-color: var(--pastel-secondary);
+    color: var(--pastel-secondary-foreground);
+    border: 1px solid var(--pastel-border);
+}
+
+.theme-pastel .btn-secondary:hover {
+    background-color: var(--pastel-muted);
+    transform: translateY(-1px);
+}
+
+.theme-pastel .btn-success {
+    background: linear-gradient(135deg, var(--pastel-success) 0%, hsl(120, 45%, 50%) 100%);
+    color: var(--pastel-success-foreground);
+}
+
+.theme-pastel .btn-success:hover {
+    background: linear-gradient(135deg, hsl(120, 45%, 50%) 0%, hsl(120, 40%, 45%) 100%);
+    transform: translateY(-1px);
+}
+
+.theme-pastel .btn-warning {
+    background: linear-gradient(135deg, hsl(38, 92%, 50%) 0%, hsl(38, 87%, 45%) 100%);
+    color: white;
+    font-weight: 600;
+    border: none;
+    box-shadow: 0 2px 4px rgba(255, 153, 0, 0.3);
+}
+
+.theme-pastel .btn-warning:hover {
+    background: linear-gradient(135deg, hsl(38, 92%, 55%) 0%, hsl(38, 87%, 50%) 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(255, 153, 0, 0.4);
+}
+
+.theme-pastel .btn-info {
+    background: linear-gradient(135deg, hsl(199, 89%, 48%) 0%, hsl(199, 84%, 43%) 100%);
+    color: white;
+}
+
+.theme-pastel .btn-outline-primary {
+    background-color: transparent;
+    color: white;
+    border: 1px solid white;
+}
+
+.theme-pastel .btn-outline-primary:hover {
+    background-color: white;
+    color: var(--pastel-primary);
+}
+
+.theme-pastel .btn-outline-warning {
+    background-color: white;
+    color: hsl(38, 92%, 50%);
+    border: 1px solid hsl(38, 92%, 50%);
+    font-weight: 600;
+}
+
+.theme-pastel .btn-outline-warning:hover {
+    background-color: hsl(38, 92%, 50%);
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(255, 153, 0, 0.3);
+}
+
+.theme-pastel .btn-outline-danger {
+    background-color: transparent;
+    color: var(--pastel-error);
+    border: 1px solid var(--pastel-error);
+}
+
+.theme-pastel .btn-outline-danger:hover {
+    background-color: var(--pastel-error);
+    color: var(--pastel-error-foreground);
+}
+
+.theme-pastel .btn-outline-secondary {
+    background-color: transparent;
+    color: var(--pastel-muted-foreground);
+    border: 1px solid var(--pastel-border);
+}
+
+.theme-pastel .btn-outline-secondary:hover {
+    background-color: var(--pastel-secondary);
+}
+
+/* Forms */
+.theme-pastel .form-control,
+.theme-pastel .form-select {
+    border: 1px solid var(--pastel-border);
+    border-radius: 8px;
+    background-color: var(--pastel-input);
+    color: var(--pastel-foreground);
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+}
+
+.theme-pastel .form-control:focus,
+.theme-pastel .form-select:focus {
+    border-color: var(--pastel-primary);
+    box-shadow: 0 0 0 3px rgba(255, 179, 48, 0.1);
+    outline: none;
+}
+
+.theme-pastel .form-label {
+    color: var(--pastel-foreground);
+    font-weight: 500;
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Navigation Tabs */
+.theme-pastel .nav-tabs {
+    border-bottom: 1px solid var(--pastel-border);
+    margin-bottom: 1.5rem;
+}
+
+.theme-pastel .nav-tabs .nav-link {
+    color: var(--pastel-muted-foreground);
+    border: none;
+    border-radius: 8px 8px 0 0;
+    padding: 0.75rem 1.25rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    background-color: transparent;
+}
+
+.theme-pastel .nav-tabs .nav-link:hover {
+    background-color: var(--pastel-secondary);
+    color: var(--pastel-foreground);
+}
+
+.theme-pastel .nav-tabs .nav-link.active {
+    background-color: var(--pastel-primary);
+    color: var(--pastel-primary-foreground);
+    border-bottom: 2px solid var(--pastel-primary);
+}
+
+/* Alerts */
+.theme-pastel .alert {
+    border-radius: 8px;
+    border: none;
+    padding: 1rem 1.25rem;
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+}
+
+.theme-pastel .alert-success {
+    background-color: hsl(120, 50%, 95%);
+    color: hsl(120, 50%, 25%);
+    border-left: 4px solid var(--pastel-success);
+}
+
+.theme-pastel .alert-danger {
+    background-color: hsl(0, 50%, 95%);
+    color: hsl(0, 50%, 25%);
+    border-left: 4px solid var(--pastel-error);
+}
+
+.theme-pastel .alert-info {
+    background-color: hsl(199, 50%, 95%);
+    color: hsl(199, 50%, 25%);
+    border-left: 4px solid hsl(199, 89%, 48%);
+}
+
+/* Modals */
+.theme-pastel .modal-content {
+    border-radius: 12px;
+    border: none;
+    box-shadow: var(--pastel-shadow-lg);
+    background-color: var(--pastel-card);
+}
+
+.theme-pastel .modal-header {
+    border-bottom: 1px solid var(--pastel-border);
+    padding: 1.5rem;
+    background: linear-gradient(135deg, var(--pastel-accent) 0%, var(--pastel-secondary) 100%);
+    border-radius: 12px 12px 0 0;
+}
+
+.theme-pastel .modal-title {
+    color: var(--pastel-foreground);
+    font-weight: 600;
+    font-size: 1.125rem;
+}
+
+.theme-pastel .modal-body {
+    padding: 1.5rem;
+}
+
+.theme-pastel .modal-footer {
+    border-top: 1px solid var(--pastel-border);
+    padding: 1rem 1.5rem;
+    background-color: var(--pastel-secondary);
+    border-radius: 0 0 12px 12px;
+}
+
+/* Spinners */
+.theme-pastel .spinner-border {
+    color: var(--pastel-primary);
+}
+
+/* Food/Menu Grid Layout */
+.theme-pastel .row.g-3 {
+    --bs-gutter-x: 1.5rem;
+    --bs-gutter-y: 1.5rem;
+    margin: -0.75rem;
+}
+
+.theme-pastel .col-md-3 {
+    padding: 0.75rem;
+    margin-bottom: 0;
+}
+
+/* Food/Menu Item Cards */
+.theme-pastel .card {
+    background-color: var(--pastel-card);
+    border: 1px solid var(--pastel-card-border);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--pastel-shadow);
+    min-height: 380px;
+}
+
+.theme-pastel .card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--pastel-shadow-md);
+}
+
+.theme-pastel .card-body {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.theme-pastel .card img {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 0.75rem;
+    transition: transform 0.3s ease;
+    background-color: var(--pastel-muted);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23999' viewBox='0 0 24 24'%3E%3Cpath d='M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 48px;
+}
+
+.theme-pastel .card:hover img {
+    transform: scale(1.02);
+}
+
+.theme-pastel .card-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--pastel-foreground);
+    line-height: 1.3;
+    min-height: 2.6rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.theme-pastel .food-price {
+    color: var(--pastel-price);
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+}
+
+.theme-pastel .food-category {
+    color: var(--pastel-muted-foreground);
+    font-size: 0.8rem;
+    background-color: var(--pastel-category);
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    display: inline-block;
+    margin-bottom: auto;
+    font-weight: 500;
+    align-self: flex-start;
+}
+
+.theme-pastel .card-actions {
+    margin-top: 1rem;
+    display: flex;
+    gap: 0.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--pastel-border);
+}
+
+.theme-pastel .card-actions .btn {
+    flex: 1;
+    font-size: 0.8rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+/* Shop Grid Layout */
+.theme-pastel .shops-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.theme-pastel .shop-card {
+    background-color: var(--pastel-card);
+    border: 1px solid var(--pastel-card-border);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    box-shadow: var(--pastel-shadow);
+    cursor: pointer;
+}
+
+.theme-pastel .shop-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--pastel-shadow-lg);
+}
+
+.theme-pastel .shop-image-container {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin: 1.5rem auto 1rem auto;
+    border: 3px solid var(--pastel-accent);
+}
+
+.theme-pastel .shop-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.theme-pastel .shop-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--pastel-foreground);
+    text-align: center;
+    margin-bottom: 0.5rem;
+}
+
+.theme-pastel .shop-id {
+    font-size: 0.875rem;
+    color: var(--pastel-muted-foreground);
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+/* Loading States */
+.theme-pastel .loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+    color: var(--pastel-muted-foreground);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .theme-pastel .content {
+        padding: 1rem;
+    }
+    
+    .theme-pastel .row.g-3 {
+        --bs-gutter-x: 1rem;
+        --bs-gutter-y: 1rem;
+    }
+    
+    .theme-pastel .col-md-4 {
+        margin-bottom: 1rem;
+    }
+    
+    .theme-pastel .card img {
+        height: 160px;
+    }
+    
+    .theme-pastel .card-body {
+        padding: 1rem;
+    }
+    
+    .theme-pastel .btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.8rem;
+    }
+    
+    .theme-pastel .card-actions .btn {
+        font-size: 0.75rem;
+        padding: 0.4rem 0.6rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .theme-pastel .card img {
+        height: 140px;
+    }
+    
+    .theme-pastel .food-price {
+        font-size: 1.1rem;
+    }
+    
+    .theme-pastel .card-title {
+        font-size: 1rem;
+    }
+}
+
+/* Utility Classes */
+.theme-pastel .text-primary {
+    color: var(--pastel-primary) !important;
+}
+
+.theme-pastel .text-muted {
+    color: var(--pastel-muted-foreground) !important;
+}
+
+.theme-pastel .bg-primary {
+    background-color: var(--pastel-primary) !important;
+}
+
+.theme-pastel .bg-secondary {
+    background-color: var(--pastel-secondary) !important;
+}
+
+.theme-pastel .border-primary {
+    border-color: var(--pastel-primary) !important;
+}
+
+/* Custom Animations */
+@keyframes pastel-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.theme-pastel .fade-in {
+    animation: pastel-fade-in 0.3s ease-out;
+}
+
+/* Focus States for Accessibility */
+.theme-pastel *:focus {
+    outline: 2px solid var(--pastel-primary);
+    outline-offset: 2px;
+}
+
+.theme-pastel .btn:focus {
+    box-shadow: 0 0 0 3px rgba(255, 179, 48, 0.3);
+}
